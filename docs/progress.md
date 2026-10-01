@@ -1,4 +1,4 @@
-Next task: T06
+Next task: T07
 
 # Progress: invoice-reminders
 
@@ -152,3 +152,23 @@ Console: there were 404 errors for /rules, /invoices/<id> RSC prefetches and fav
 CHANGES: docs/tasks.json | 2 +-
  web/src/app/invoices/page.tsx | 224 ++++++++++++++++++++++++++++++++++++++++++
  2 files changed, 225 insertions(+), 1 deletion(-)
+
+TASK: T06
+VERDICT: PASS
+COMMANDS:
+- ( docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '"db":"ok"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders' && curl -fsS http://localhost:18025/api/v1/info > /dev/null && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) ) -> exit 0
+- ( cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/invoices/1 | grep -qF 'Back to invoices' ) -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+- Step 1 PASS: Created QA-R104130 (Reminder Client, reminder@client.test, 250.00, due 2026-09-19, which is 12 days before 2026-10-01). First row showed that Number with Reminders 0 and Last reminder "-". The time suffix was 104130, taken when I filled the form rather than the earlier clock read.
+- Step 2 PASS: Clicking 'Send next reminder' showed "Reminder sent: Friendly nudge". First row then showed Reminders 1 and Last reminder "Friendly nudge".
+- Step 3 PASS: The Number link opened /invoices/10 with heading "Invoice QA-R104130" and the link "Open customer pay link". Reminder history had exactly one entry: Friendly nudge, Trigger: manual, Subject: "Friendly reminder: invoice QA-R104130 is past due".
+- Step 4 PASS: Mailpit listed a message to reminder@client.test with subject "Friendly reminder: invoice QA-R104130 is past due".
+- Step 5 PASS: Clicking 'Send next reminder' on the detail page showed "Reminder sent: Firm reminder". Reminder history then had two entries, with "Firm reminder" on top (subject "Reminder: invoice QA-R104130 is 12 days overdue") and Friendly nudge below it. The browser is closed.
+- Note: the page console showed 1 to 2 errors during the walk. I did not investigate them and none affected the acceptance steps.
+- The stack was left running after the commands, as instructed. I did not run the Stop command because none was specified in this task.
+CHANGES:
+ docs/tasks.json                    |   4 +-
+ web/src/app/invoices/[id]/page.tsx | 149 +++++++++++++++++++++++++++++++++++++
+ web/src/app/invoices/page.tsx      |  16 +++-
+ 3 files changed, 166 insertions(+), 3 deletions(-)

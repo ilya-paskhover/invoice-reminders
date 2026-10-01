@@ -81,6 +81,20 @@ export default function InvoicesPage() {
     }
   }
 
+  async function sendReminder(id: number) {
+    setError("");
+    setMessage("");
+    try {
+      const r = await apiFetch<{ reminder: { rule_name: string } }>(`/api/invoices/${id}/send-reminder`, {
+        method: "POST",
+      });
+      setMessage(`Reminder sent: ${r.reminder.rule_name}`);
+      await load(filter);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Send reminder failed");
+    }
+  }
+
   async function createInvoice(e: React.FormEvent) {
     e.preventDefault();
     setFormError("");
@@ -209,7 +223,7 @@ export default function InvoicesPage() {
                 <td className="p-2">
                   {!paid && (
                     <div className="flex gap-2">
-                      <button type="button" className={btn}>Send next reminder</button>
+                      <button type="button" className={btn} onClick={() => sendReminder(inv.id)}>Send next reminder</button>
                       <button type="button" className={btn} onClick={() => markPaid(inv.id)}>Mark paid</button>
                     </div>
                   )}

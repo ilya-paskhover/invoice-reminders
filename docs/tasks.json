@@ -80,7 +80,7 @@
         "Go back to the invoice detail page and click its 'Send next reminder' button. 'Reminder history' now shows two entries, and the newest (top) entry shows 'Firm reminder'."
       ],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {
