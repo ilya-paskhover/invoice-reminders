@@ -112,7 +112,7 @@
         "Open http://localhost:13000/. The large number in the 'Recovered after reminder' card is exactly 1 higher than noted in step 3."
       ],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     }
   ]

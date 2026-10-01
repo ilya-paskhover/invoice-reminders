@@ -1,4 +1,4 @@
-Next task: T08
+Next task: FINISH
 
 # Progress: invoice-reminders
 
@@ -214,3 +214,18 @@ CHANGES:
  docs/tasks.json            |   2 +-
  web/src/app/rules/page.tsx | 186 +++++++++++++++++++++++++++++++++++++++++++++
  5 files changed, 236 insertions(+), 2 deletions(-)
+
+TASK: T08
+VERDICT: PASS
+COMMANDS:
+( docker compose up -d --build --force-recreate --wait && curl health db ok && curl web 'Invoice Reminders' && curl mailpit info && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) ) -> exit 0
+( cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/ | grep -qF 'Run reminders now' ) -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+Step 1 PASS: Dashboard heading, cards Outstanding ($5,280.00), Overdue invoices (4), Reminders sent (2), Recovered after reminder (0), the 'Run reminders now' button, and "Scheduler: every 60 min, next run 12:06:07 PM" were all visible. Recent activity table was present.
+Step 2 PASS: I created QA-D110830 (Dashboard Client, dash@client.test, 300.00, due 2026-09-19). On the Dashboard I clicked 'Run reminders now'. The message read "Run complete: checked 5, sent 4, failed 0". Reminders sent went from 2 to 6. Recent activity showed QA-D110830 with 'Firm reminder'.
+Step 3 PASS: Recovered after reminder was 0 before the pay step. I opened the QA-D110830 link from the first row of Invoices, then clicked 'Open customer pay link'. The page showed the heading "Pay invoice QA-D110830" and the button "Pay $300.00 (mock)".
+Step 4 PASS: After clicking the pay button, the page showed "Payment received. Thank you!".
+Step 5 PASS: Recovered after reminder showed 1 (with $300.00), exactly 1 higher than before.
+Console errors: one on the pay page at http://localhost:14000, "Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:14000/favicon.ico". No console errors on the web app at localhost:13000. I did not run the Stop command; the stack is left running, as instructed.
+CHANGES: none (git diff --cached --stat shows the pre-staged docs/tasks.json, web/src/app/icon.svg, web/src/app/page.tsx; I changed no files)
