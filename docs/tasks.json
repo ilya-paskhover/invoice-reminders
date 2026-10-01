@@ -18,7 +18,7 @@
       "verify": "docker compose up -d --force-recreate --wait db && cd backend && npm run typecheck && npm test -- tests/invoices.test.ts tests/import.test.ts",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

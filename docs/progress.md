@@ -1,4 +1,4 @@
-Next task: T01
+Next task: T02
 
 # Progress: invoice-reminders
 
@@ -57,3 +57,26 @@ CHANGES:
  web/src/lib/format.ts                |   11 +
  web/tsconfig.json                    |   21 +
  37 files changed, 5119 insertions(+), 1 deletion(-)
+
+TASK: T01
+VERDICT: PASS
+COMMANDS:
+(smoke, T00) docker compose up -d --build --force-recreate --wait && curl ... && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) -> exit 0
+(T01) docker compose up -d --force-recreate --wait db && cd backend && npm run typecheck && npm test -- tests/invoices.test.ts tests/import.test.ts -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a
+CHANGES: none (git diff --cached --stat, as printed:)
+ backend/migrations/002_schema.sql                  |  45 +++++++
+ backend/src/app.ts                                 |   5 +
+ backend/src/db/seed.ts                             |  32 +++++
+ backend/src/routes/imports.ts                      |  38 ++++++
+ backend/src/routes/invoices.ts                     | 145 ++++++++++++++++++++
+ backend/src/server.ts                              |   2 +
+ .../src/sources/fixtures/mock-stripe-invoices.json |   6 +
+ backend/src/sources/mock-stripe.ts                 |  40 ++++++
+ backend/src/sources/types.ts                       |  15 +++
+ backend/tests/helpers.ts                           |   3 +-
+ backend/tests/import.test.ts                       |  32 +++++
+ backend/tests/invoices.test.ts                     | 148 +++++++++++++++++++++
+ docs/tasks.json                                    |   2 +-
+ 13 files changed, 511 insertions(+), 2 deletions(-)

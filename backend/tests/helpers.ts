@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { createPool } from "../src/db/pool";
+import { seedDefaultRules } from "../src/db/seed";
 import { buildApp } from "../src/app";
 import { loadConfig, type Config } from "../src/config";
 import type { EmailSender } from "../src/email/types";
@@ -20,7 +21,6 @@ export function testConfig(overrides: Partial<Config> = {}): Config {
   };
 }
 
-// Later tasks add the default-rule re-seed once the tables and seed function exist.
 export async function resetDb(): Promise<void> {
   const dbName = new URL(TEST_DATABASE_URL).pathname.slice(1);
   if (!dbName.endsWith("_test")) throw new Error(`Refusing to reset non-test database ${dbName}`);
@@ -30,6 +30,7 @@ export async function resetDb(): Promise<void> {
   const row = t.rows[0];
   if (row.r && row.i && row.rr) {
     await testPool.query("TRUNCATE reminders, invoices, reminder_rules RESTART IDENTITY CASCADE");
+    await seedDefaultRules(testPool);
   }
 }
 

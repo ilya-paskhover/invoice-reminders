@@ -1,0 +1,6 @@
+[
+  { "external_id": "mock_in_1001", "number": "STR-1001", "client_name": "Acme Design Co", "client_email": "billing@acme.test", "amount_cents": 125000, "currency": "USD", "due_in_days": -3 },
+  { "external_id": "mock_in_1002", "number": "STR-1002", "client_name": "Brightside Plumbing", "client_email": "accounts@brightside.test", "amount_cents": 48000, "currency": "USD", "due_in_days": -12 },
+  { "external_id": "mock_in_1003", "number": "STR-1003", "client_name": "Northwind Coaching", "client_email": "pay@northwind.test", "amount_cents": 240000, "currency": "USD", "due_in_days": -35 },
+  { "external_id": "mock_in_1004", "number": "STR-1004", "client_name": "Lumen Studio", "client_email": "hello@lumen.test", "amount_cents": 90000, "currency": "USD", "due_in_days": 7 }
+]

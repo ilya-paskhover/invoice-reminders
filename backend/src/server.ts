@@ -1,6 +1,7 @@
 import { loadConfig } from "./config";
 import { createPool } from "./db/pool";
 import { runMigrations } from "./db/migrate";
+import { seedDefaultRules } from "./db/seed";
 import { buildApp } from "./app";
 import type { EmailSender } from "./email/types";
 
@@ -8,6 +9,7 @@ async function main() {
   const config = loadConfig();
   const pool = createPool(config.databaseUrl);
   await runMigrations(pool);
+  await seedDefaultRules(pool);
   // Real email sender is wired in a later task.
   const emailSender: EmailSender = {
     async send() {
