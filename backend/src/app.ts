@@ -6,6 +6,7 @@ import type { EmailSender } from "./email/types";
 import { registerHealthRoutes } from "./routes/health";
 import { registerInvoiceRoutes } from "./routes/invoices";
 import { registerImportRoutes } from "./routes/imports";
+import { registerRuleRoutes } from "./routes/rules";
 import { MockStripeSource } from "./sources/mock-stripe";
 
 export interface AppDeps {
@@ -20,5 +21,6 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   registerHealthRoutes(app, deps.pool);
   registerInvoiceRoutes(app, deps.pool, deps.config);
   registerImportRoutes(app, deps.pool, new MockStripeSource());
+  registerRuleRoutes(app, deps.pool);
   return app;
 }

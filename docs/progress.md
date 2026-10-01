@@ -1,4 +1,4 @@
-Next task: T02
+Next task: T03
 
 # Progress: invoice-reminders
 
@@ -80,3 +80,19 @@ CHANGES: none (git diff --cached --stat, as printed:)
  backend/tests/invoices.test.ts                     | 148 +++++++++++++++++++++
  docs/tasks.json                                    |   2 +-
  13 files changed, 511 insertions(+), 2 deletions(-)
+
+TASK: T02
+VERDICT: PASS
+COMMANDS:
+- (docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '"db":"ok"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders' && curl -fsS http://localhost:18025/api/v1/info > /dev/null && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck)) -> exit 0
+- (docker compose up -d --force-recreate --wait db && cd backend && npm run typecheck && npm test -- tests/templates.test.ts tests/rules.test.ts) -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a
+CHANGES:
+ backend/src/app.ts                 |  2 +
+ backend/src/reminders/templates.ts | 64 +++++++++++++++++++++++++
+ backend/src/routes/rules.ts        | 84 +++++++++++++++++++++++++++++++++
+ backend/tests/rules.test.ts        | 97 ++++++++++++++++++++++++++++++++++++++
+ backend/tests/templates.test.ts    | 55 +++++++++++++++++++++
+ docs/tasks.json                    |  2 +-
+ 6 files changed, 303 insertions(+), 1 deletion(-)
