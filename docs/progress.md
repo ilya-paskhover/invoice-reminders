@@ -1,4 +1,4 @@
-Next task: T05
+Next task: T06
 
 # Progress: invoice-reminders
 
@@ -135,3 +135,20 @@ CHANGES: (output of git diff --cached --stat)
  backend/tests/stats.test.ts | 61 +++++++++++++++++++++++++++++++
  docs/tasks.json             |  2 +-
  5 files changed, 218 insertions(+), 1 deletion(-)
+
+TASK: T05
+VERDICT: PASS
+COMMANDS:
+- ( docker compose up -d --build --force-recreate --wait && curl health/web/mailpit checks && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) ) -> exit 0
+- ( cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/invoices | grep -qF 'Import from Stripe (mock)' ) -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+1. pass. The heading 'Invoices' and the buttons 'Import from Stripe (mock)' and 'New invoice' are visible. The page also has All, Overdue and Paid filter tabs.
+2. pass. After the click, the message 'Imported 0, skipped 4' appeared. The table has a row for Client 'Northwind Coaching' with Status 'Overdue' (35 days).
+3. pass. I filled the form with Number QA-103053, Client name 'QA Client', Client email 'qa@client.test', Amount 480.00 and Due date 2026-09-19. Today is 2026-10-01, so 12 days before is 2026-09-19. After 'Create invoice', the first row read QA-103053, QA Client, $480.00, Overdue, Days overdue 12.
+4. pass. I clicked 'Mark paid' in the first row. Its Status became 'Paid' and Days overdue became '-'. The row no longer showed the 'Mark paid' or 'Send next reminder' buttons (the Actions cell was empty). I clicked the button through a DOM click on the first row's second button, because I did not take a fresh snapshot ref for it.
+5. pass. After clicking the 'Paid' filter tab, the table showed only QA-103053 with Status 'Paid'. No row showed 'Overdue'.
+Console: there were 404 errors for /rules, /invoices/<id> RSC prefetches and favicon.ico. They come from pages that later tasks will build and were not part of the acceptance steps.
+CHANGES: docs/tasks.json | 2 +-
+ web/src/app/invoices/page.tsx | 224 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 225 insertions(+), 1 deletion(-)
