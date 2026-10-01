@@ -96,8 +96,8 @@
         "Click the 'Active' button in that new row. It changes to 'Inactive', and the row still shows 'Inactive' after reloading the page."
       ],
       "manual_check": false,
-      "status": "failing",
-      "attempts": 0
+      "status": "passing",
+      "attempts": 1
     },
     {
       "id": "T08",

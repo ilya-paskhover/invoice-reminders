@@ -24,7 +24,10 @@ export interface AppDeps {
 
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
-  await app.register(cors, { origin: deps.config.webOrigin });
+  await app.register(cors, {
+    origin: deps.config.webOrigin,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  });
   await app.register(formbody);
   const scheduler = deps.scheduler ?? new Scheduler(deps);
   registerHealthRoutes(app, deps.pool);

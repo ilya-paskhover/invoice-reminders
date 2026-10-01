@@ -1,4 +1,4 @@
-Next task: T07
+Next task: T08
 
 # Progress: invoice-reminders
 
@@ -172,3 +172,45 @@ CHANGES:
  web/src/app/invoices/[id]/page.tsx | 149 +++++++++++++++++++++++++++++++++++++
  web/src/app/invoices/page.tsx      |  16 +++-
  3 files changed, 166 insertions(+), 3 deletions(-)
+
+TASK: T07
+VERDICT: FAIL
+COMMANDS:
+- (smoke T00) docker compose up -d --build --force-recreate --wait && curl ... && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) -> exit 0
+- (T07) cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/rules | grep -qF 'Add rule' -> exit 0
+- docker compose down (Stop) -> exit 0
+FAILURE OUTPUT: Acceptance step 2 failed. After clicking Save in the Edit form, the page showed "Failed to fetch". The browser console had these errors: "Access to fetch at 'http://localhost:14000/api/rules/2' from origin 'http://localhost:13000' has been blocked by CORS policy: Method PUT is not allowed by Access-Control-Allow-Methods in preflight response." and "Failed to load resource: net::ERR_FAILED @ http://localhost:14000/api/rules/2". The API's CORS preflight does not allow PUT. The edit form stayed open and the Firm reminder row's Subject was not updated. There was also a favicon.ico 404, which I'm treating as irrelevant.
+BROWSER:
+1. PASS. The heading 'Reminder rules' was visible. The table showed Friendly nudge with '1 days', Firm reminder with '10 days', and Final notice with '30 days'.
+2. FAIL. The Edit form opened with the existing values. I replaced Subject with 'Second notice: invoice {{invoice_number}} QA-075000' and clicked Save. The page showed "Failed to fetch" because the CORS preflight blocked PUT. The row's Subject did not change, so the reload persistence check could not pass.
+3. Not run. It depends on step 2 working.
+4. Not run. I stopped after the step 2 failure.
+5. Not run. I stopped after the step 2 failure.
+The browser is closed and the stack is stopped.
+CHANGES:
+ docs/tasks.json            |   2 +-
+ web/src/app/rules/page.tsx | 186 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 187 insertions(+), 1 deletion(-)
+
+Main thread note: root cause is backend CORS (PUT not in allowed methods), outside fullstack-dev's client-only scope. Attempt 2 is routed to backend-infra-dev for the CORS fix; the T07 page itself is unchanged.
+
+TASK: T07
+VERDICT: PASS
+COMMANDS:
+- ( docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '"db":"ok"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders' && curl -fsS http://localhost:18025/api/v1/info > /dev/null && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) ) -> exit 0
+- ( cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/rules | grep -qF 'Add rule' ) -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+1. pass. Heading 'Reminder rules' visible. Rows seen: Friendly nudge / 1 days, Firm reminder / 10 days, Final notice / 30 days.
+2. pass. I clicked Edit on the Firm reminder row and set Subject to 'Second notice: invoice {{invoice_number}} QA-105702', then clicked Save. After a page reload the row's Subject column showed that subject. I did not capture the table before the reload. The CORS/PUT fix works, because the change persisted.
+3. pass. I clicked Edit, set Subject to 'Hi {{unknown_field}}' and clicked Save. The form showed "Unknown placeholder. Unknown placeholder {{unknown_field}}. Allowed: ...". After Cancel, the Firm reminder row still showed 'Second notice: invoice {{invoice_number}} QA-105702'.
+4. pass. I clicked Add rule and filled Name 'QA escalation 105800', Days '60', the given Subject and the given Body, then clicked Create rule. A new row appeared with 'QA escalation 105800', '60 days' and Status 'Active'.
+5. pass. Clicking 'Active' on the new row changed it to 'Inactive'. It was still 'Inactive' after a reload.
+Notes: the page showed one console error on load, which I did not investigate. The suffix 105800 is a fixed number I chose, not the time at that step (the time was read earlier as 105702, which I used in step 2). The stack is still running. The browser is closed.
+CHANGES:
+ backend/src/app.ts         |   5 +-
+ backend/tests/cors.test.ts |  24 ++++++
+ docs/progress.md           |  21 +++++
+ docs/tasks.json            |   2 +-
+ web/src/app/rules/page.tsx | 186 +++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 236 insertions(+), 2 deletions(-)
