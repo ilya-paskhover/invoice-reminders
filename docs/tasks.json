@@ -48,7 +48,7 @@
       "verify": "docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/pay.test.ts tests/stats.test.ts && curl -fsS http://localhost:14000/api/stats | grep -qF '\"paid_after_reminder_count\"' && curl -s -o /dev/null -w '%{http_code}' http://localhost:14000/pay/no-such-token | grep -qx 404",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

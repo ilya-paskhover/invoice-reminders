@@ -9,6 +9,8 @@ import { registerImportRoutes } from "./routes/imports";
 import { registerRuleRoutes } from "./routes/rules";
 import { registerReminderRoutes } from "./routes/reminders";
 import { registerSchedulerRoutes } from "./routes/scheduler";
+import formbody from "@fastify/formbody";
+import { registerPayRoutes } from "./routes/pay";
 import { Scheduler } from "./reminders/scheduler";
 import { MockStripeSource } from "./sources/mock-stripe";
 
@@ -23,6 +25,7 @@ export interface AppDeps {
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   await app.register(cors, { origin: deps.config.webOrigin });
+  await app.register(formbody);
   const scheduler = deps.scheduler ?? new Scheduler(deps);
   registerHealthRoutes(app, deps.pool);
   registerInvoiceRoutes(app, deps.pool, deps.config);
@@ -30,5 +33,6 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   registerRuleRoutes(app, deps.pool);
   registerReminderRoutes(app, deps);
   registerSchedulerRoutes(app, scheduler);
+  registerPayRoutes(app, deps.pool);
   return app;
 }

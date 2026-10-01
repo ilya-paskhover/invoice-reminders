@@ -1,4 +1,4 @@
-Next task: T04
+Next task: T05
 
 # Progress: invoice-reminders
 
@@ -120,3 +120,18 @@ CHANGES:
  backend/tests/smtp-mailpit.test.ts |  29 +++++++
  docs/tasks.json                    |   2 +-
  13 files changed, 612 insertions(+), 9 deletions(-)
+
+TASK: T04
+VERDICT: PASS
+COMMANDS:
+(smoke, T00) docker compose up -d --build --force-recreate --wait && curl health/web/mailpit checks && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) -> exit 0
+(T04) docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/pay.test.ts tests/stats.test.ts && curl /api/stats | grep -qF '"paid_after_reminder_count"' && curl /pay/no-such-token | grep -qx 404 -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a
+CHANGES: (output of git diff --cached --stat)
+ backend/src/app.ts          |  4 ++
+ backend/src/routes/pay.ts   | 89 +++++++++++++++++++++++++++++++++++++++++++++
+ backend/tests/pay.test.ts   | 63 ++++++++++++++++++++++++++++++++
+ backend/tests/stats.test.ts | 61 +++++++++++++++++++++++++++++++
+ docs/tasks.json             |  2 +-
+ 5 files changed, 218 insertions(+), 1 deletion(-)
