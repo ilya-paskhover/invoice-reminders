@@ -1,0 +1,119 @@
+{
+  "slug": "invoice-reminders",
+  "tasks": [
+    {
+      "id": "T00",
+      "name": "Scaffold: compose stack (Postgres, Mailpit, API, web), backend and web skeletons, test DB, .env.example, .gitignore, health endpoint",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '\"db\":\"ok\"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders' && curl -fsS http://localhost:18025/api/v1/info > /dev/null && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck)",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T01",
+      "name": "Invoices API: schema migration, default rule seed, invoice CRUD and mark-paid, mock Stripe import",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --force-recreate --wait db && cd backend && npm run typecheck && npm test -- tests/invoices.test.ts tests/import.test.ts",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T02",
+      "name": "Reminder rules API and template rendering with placeholder validation",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --force-recreate --wait db && cd backend && npm run typecheck && npm test -- tests/templates.test.ts tests/rules.test.ts",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T03",
+      "name": "Email senders (SMTP to Mailpit, memory), escalation engine, run and send-reminder endpoints, reminder log, scheduler",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/reminders.test.ts tests/scheduler.test.ts tests/smtp-mailpit.test.ts && curl -fsS http://localhost:14000/api/scheduler | grep -qF '\"interval_seconds\":3600'",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T04",
+      "name": "Mock customer pay link pages and dashboard stats endpoint",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/pay.test.ts tests/stats.test.ts && curl -fsS http://localhost:14000/api/stats | grep -qF '\"paid_after_reminder_count\"' && curl -s -o /dev/null -w '%{http_code}' http://localhost:14000/pay/no-such-token | grep -qx 404",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T05",
+      "name": "Web: Invoices page with table, filter tabs, New invoice form, mock Stripe import, Mark paid",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/invoices | grep -qF 'Import from Stripe (mock)'",
+      "acceptance": [
+        "Open http://localhost:13000/invoices. The heading 'Invoices' and the buttons 'Import from Stripe (mock)' and 'New invoice' are visible.",
+        "Click the 'Import from Stripe (mock)' button. A message starting with 'Imported' appears (for example 'Imported 4, skipped 0' or 'Imported 0, skipped 4'), and the table has a row whose Client is 'Northwind Coaching' with the Status badge 'Overdue'.",
+        "Click the 'New invoice' button. Fill Number with 'QA-' followed by the current time as HHMMSS, Client name 'QA Client', Client email 'qa@client.test', Amount '480.00', and Due date with the date 12 days before today. Click 'Create invoice'. The first table row shows that Number, Client 'QA Client', Amount '$480.00', Status badge 'Overdue', and Days overdue '12' (13 is acceptable only if the UTC date is already tomorrow).",
+        "Click the 'Mark paid' button in the first row. That row's Status badge changes to 'Paid', its Days overdue shows '-', and the row no longer shows the 'Mark paid' or 'Send next reminder' buttons.",
+        "Click the 'Paid' filter tab. The QA- invoice created above is listed, and no row in the table shows the Status badge 'Overdue'."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T06",
+      "name": "Web: Invoice detail page with reminder history and pay link, Send next reminder on list and detail",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/invoices/1 | grep -qF 'Back to invoices'",
+      "acceptance": [
+        "Open http://localhost:13000/invoices, click 'New invoice', fill Number with 'QA-R' followed by the current time as HHMMSS, Client name 'Reminder Client', Client email 'reminder@client.test', Amount '250.00', Due date 12 days before today, and click 'Create invoice'. The first table row shows that Number with Reminders '0' and Last reminder '-'.",
+        "Click the 'Send next reminder' button in the first row. The message 'Reminder sent: Friendly nudge' appears, and the first row shows Reminders '1' and Last reminder 'Friendly nudge'.",
+        "Click the Number link in the first row. The detail page shows the heading 'Invoice QA-R...' (the number created above), the link 'Open customer pay link', and under 'Reminder history' exactly one entry showing 'Friendly nudge', 'manual', and the subject 'Friendly reminder: invoice QA-R... is past due'.",
+        "Open http://localhost:18025 (Mailpit). The message list contains a message to reminder@client.test with the subject 'Friendly reminder: invoice QA-R... is past due' for the number created above.",
+        "Go back to the invoice detail page and click its 'Send next reminder' button. 'Reminder history' now shows two entries, and the newest (top) entry shows 'Firm reminder'."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T07",
+      "name": "Web: Reminder rules page with template editing, add rule, active toggle",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/rules | grep -qF 'Add rule'",
+      "acceptance": [
+        "Open http://localhost:13000/rules. The heading 'Reminder rules' is visible and the table has rows named 'Friendly nudge' with '1 days' or '1 day', 'Firm reminder' with '10 days', and 'Final notice' with '30 days'.",
+        "Click the 'Edit' button in the 'Firm reminder' row. Replace Subject with 'Second notice: invoice {{invoice_number}} QA-' followed by the current time as HHMMSS, and click 'Save'. The 'Firm reminder' row's Subject column shows the new subject, and it still shows it after reloading the page.",
+        "Click the 'Edit' button in the 'Firm reminder' row, replace Subject with 'Hi {{unknown_field}}', and click 'Save'. An error containing 'Unknown placeholder' appears in the form. Click 'Cancel'. The 'Firm reminder' row still shows the subject saved in the previous step.",
+        "Click the 'Add rule' button. Fill Name with 'QA escalation ' followed by the current time as HHMMSS, Days after due '60', Subject 'Collections notice: {{invoice_number}}', Body 'Please pay {{amount}} today: {{pay_link}}', and click 'Create rule'. A new row with that name, '60 days', and the Status button 'Active' appears.",
+        "Click the 'Active' button in that new row. It changes to 'Inactive', and the row still shows 'Inactive' after reloading the page."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T08",
+      "name": "Web: Dashboard with stats, Run reminders now, scheduler status, recent activity",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/ | grep -qF 'Run reminders now'",
+      "acceptance": [
+        "Open http://localhost:13000/. The heading 'Dashboard', the stat cards 'Outstanding', 'Overdue invoices', 'Reminders sent', and 'Recovered after reminder', the button 'Run reminders now', and a line starting with 'Scheduler: every 60 min' are visible.",
+        "Note the 'Reminders sent' number. Click the 'Invoices' nav link, click 'New invoice', fill Number with 'QA-D' followed by the current time as HHMMSS, Client name 'Dashboard Client', Client email 'dash@client.test', Amount '300.00', Due date 12 days before today, and click 'Create invoice'. Click the 'Dashboard' nav link, then click 'Run reminders now'. A message starting with 'Run complete:' appears, the 'Reminders sent' number is at least 1 higher than noted, and 'Recent activity' has an entry with the QA-D number and 'Firm reminder'.",
+        "Note the large number in the 'Recovered after reminder' card. Click the 'Invoices' nav link, then click the Number link of the QA-D invoice in the first row. On the detail page click 'Open customer pay link'. A page with the heading 'Pay invoice QA-D...' and the button 'Pay $300.00 (mock)' appears.",
+        "Click 'Pay $300.00 (mock)'. The text 'Payment received. Thank you!' appears.",
+        "Open http://localhost:13000/. The large number in the 'Recovered after reminder' card is exactly 1 higher than noted in step 3."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    }
+  ]
+}

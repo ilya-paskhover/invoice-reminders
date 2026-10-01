@@ -2,7 +2,7 @@
 name: trend-scout
 description: Researches developer pain points, API trends, and micro-SaaS opportunities, and writes 3 to 5 POC ideas to docs/trend-ideas.md. Use for /scout-trends.
 tools: Read, Write, WebSearch, WebFetch
-model: haiku
+model: sonnet
 skills:
   - poc-rules
 ---
