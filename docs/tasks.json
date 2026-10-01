@@ -38,7 +38,7 @@
       "verify": "docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/reminders.test.ts tests/scheduler.test.ts tests/smtp-mailpit.test.ts && curl -fsS http://localhost:14000/api/scheduler | grep -qF '\"interval_seconds\":3600'",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

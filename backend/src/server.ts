@@ -3,21 +3,19 @@ import { createPool } from "./db/pool";
 import { runMigrations } from "./db/migrate";
 import { seedDefaultRules } from "./db/seed";
 import { buildApp } from "./app";
-import type { EmailSender } from "./email/types";
+import { createEmailSender } from "./email";
+import { Scheduler } from "./reminders/scheduler";
 
 async function main() {
   const config = loadConfig();
   const pool = createPool(config.databaseUrl);
   await runMigrations(pool);
   await seedDefaultRules(pool);
-  // Real email sender is wired in a later task.
-  const emailSender: EmailSender = {
-    async send() {
-      throw new Error("Email sender not configured yet");
-    },
-  };
-  const app = await buildApp({ pool, emailSender, config });
+  const emailSender = createEmailSender(config);
+  const scheduler = new Scheduler({ pool, emailSender, config });
+  const app = await buildApp({ pool, emailSender, config, scheduler });
   await app.listen({ host: "0.0.0.0", port: config.port });
+  scheduler.start();
   console.log(`API listening on ${config.port}`);
 }
 

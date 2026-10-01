@@ -1,4 +1,4 @@
-Next task: T03
+Next task: T04
 
 # Progress: invoice-reminders
 
@@ -96,3 +96,27 @@ CHANGES:
  backend/tests/templates.test.ts    | 55 +++++++++++++++++++++
  docs/tasks.json                    |  2 +-
  6 files changed, 303 insertions(+), 1 deletion(-)
+
+TASK: T03
+VERDICT: PASS
+COMMANDS:
+- (docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '"db":"ok"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders' && curl -fsS http://localhost:18025/api/v1/info > /dev/null && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck)) -> exit 0
+- (docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/reminders.test.ts tests/scheduler.test.ts tests/smtp-mailpit.test.ts && curl -fsS http://localhost:14000/api/scheduler | grep -qF '"interval_seconds":3600') -> exit 0
+- git diff --cached --stat -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a
+CHANGES:
+ backend/src/app.ts                 |   8 ++
+ backend/src/email/index.ts         |  14 +++
+ backend/src/email/memory.ts        |  18 ++++
+ backend/src/email/smtp.ts          |  32 +++++++
+ backend/src/reminders/engine.ts    | 161 ++++++++++++++++++++++++++++++++++
+ backend/src/reminders/scheduler.ts |  58 +++++++++++++
+ backend/src/routes/reminders.ts    |  55 ++++++++++++
+ backend/src/routes/scheduler.ts    |   6 ++
+ backend/src/server.ts              |  14 ++-
+ backend/tests/reminders.test.ts    | 173 +++++++++++++++++++++++++++++++++++++
+ backend/tests/scheduler.test.ts    |  51 +++++++++++
+ backend/tests/smtp-mailpit.test.ts |  29 +++++++
+ docs/tasks.json                    |   2 +-
+ 13 files changed, 612 insertions(+), 9 deletions(-)
