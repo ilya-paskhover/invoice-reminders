@@ -229,3 +229,31 @@ Step 4 PASS: After clicking the pay button, the page showed "Payment received. T
 Step 5 PASS: Recovered after reminder showed 1 (with $300.00), exactly 1 higher than before.
 Console errors: one on the pay page at http://localhost:14000, "Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:14000/favicon.ico". No console errors on the web app at localhost:13000. I did not run the Stop command; the stack is left running, as instructed.
 CHANGES: none (git diff --cached --stat shows the pre-staged docs/tasks.json, web/src/app/icon.svg, web/src/app/page.tsx; I changed no files)
+
+TASK: FINISH
+VERDICT: PASS
+COMMANDS:
+T00 -> exit 0
+T01 -> exit 0
+T02 -> exit 0
+T03 -> exit 0
+T04 -> exit 0
+T05 -> exit 0
+T06 -> exit 0
+T07 -> exit 0
+T08 -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a
+CHANGES: none
+## Summary (2026-10-01)
+
+All 9 tasks (T00 to T08) are passing and the FINISH regression check passed. T07 took 2 attempts: the first failed because backend CORS did not allow PUT; fixed in backend/src/app.ts with a new tests/cors.test.ts.
+
+Stack: Node.js 22 + TypeScript + Fastify 5 (API), PostgreSQL 16, Next.js App Router + React + Tailwind CSS (web), Nodemailer to Mailpit for email, mock Stripe import from a JSON fixture. Everything runs in local Docker; no accounts or secrets needed.
+
+Start (from repo root): `docker compose up -d --build --force-recreate --wait`
+Stop: `docker compose down` (keeps the database volume)
+
+URLs: web http://localhost:13000, API http://localhost:14000, Mailpit inbox http://localhost:18025.
+
+Tasks needing a manual hands-on check (`manual_check`): none.
