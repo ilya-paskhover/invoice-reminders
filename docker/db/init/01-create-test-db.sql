@@ -1,0 +1,1 @@
+CREATE DATABASE invoice_reminders_test;

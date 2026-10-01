@@ -8,7 +8,7 @@
       "verify": "docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '\"db\":\"ok\"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders' && curl -fsS http://localhost:18025/api/v1/info > /dev/null && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck)",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {
