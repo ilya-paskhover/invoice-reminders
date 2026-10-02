@@ -493,3 +493,45 @@ c. PASS. No inaccuracies found.
 - I did not check each remaining feature line. Examples are the one-email-per-invoice scheduler behaviour, the pay page, the Outbox and the mock Stripe import.
 - Minor: both the Live demo and Demo video lines are TODO placeholders, as the task specified.)
 CHANGES: none
+
+TASK: FINISH
+VERDICT: PASS
+COMMANDS:
+T00 -> exit 0
+T01 -> exit 0
+T02 -> exit 0
+T03 -> exit 0
+T04 -> exit 0
+T05 -> exit 0
+T06 -> exit 0
+T07 -> exit 0
+T08 -> exit 0
+T09 -> exit 0
+T10 -> exit 0
+T11 -> exit 0
+T12 -> exit 0
+T13 -> exit 0
+T14 -> exit 0
+T15 -> exit 0
+T16 -> exit 0
+T17 -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a (final mode: {"demo_mode":false,"email_delivery":"smtp","last_reset_at":null,"next_reset_at":null}; stack left running)
+CHANGES: none
+
+Note: T00 and T01 were launched concurrently by mistake, but both exited 0. Every task after that ran sequentially. Each command ran from C:\dev\poc-01 in its own Git Bash call.
+## Phase 2 summary (2026-10-03)
+
+All 18 tasks (T00 to T17) are passing and the FINISH regression check passed. T10 took 2 attempts (Invoices table clipped the Mark paid button at 1280px; fixed).
+
+Added in phase 2: design system and UI polish for all pages and the pay page (T09 to T11), demo mode with seed data, daily reset, email suppression, Outbox, rate limits and caps (T12 to T14), Render Blueprint and production Dockerfiles (T15), Playwright screenshot script and docs/screenshots (T16), README (T17).
+
+Start (from repo root): `docker compose up -d --build --force-recreate --wait`
+Demo mode locally: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait`
+Stop: `docker compose down` (keeps the database volume)
+
+The Stop command was not run at the end of this phase because the user asked to keep the app running for local testing.
+
+User steps left: push to GitHub, deploy the Render Blueprint (see README "Deploy to Render"), fill in the Live demo and Demo video lines in README.md.
+
+Tasks needing a manual hands-on check (`manual_check`): none.
