@@ -1,4 +1,4 @@
-Next task: T17
+Next task: FINISH
 
 # Progress: invoice-reminders
 
@@ -475,3 +475,21 @@ a. Images viewed. All five are fully loaded, with no skeletons or spinners, and 
 b. git status --porcelain docs/screenshots/ shows only the staged "A " entries for the 7 pngs, with no worktree modifications. The verify did not change docs/screenshots/.
 c. curl http://localhost:14000/api/meta returned {"demo_mode":false,"email_delivery":"smtp","last_reset_at":null,"next_reset_at":null}. The stack ended in normal mode.)
 CHANGES: none (I ran git diff --cached --stat only if required; I changed no files.)
+
+TASK: T17
+VERDICT: PASS
+COMMANDS:
+smoke (T00) -> exit 0
+T17 -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a (extra checks:
+a. PASS. Backend and web node_modules already existed, so I skipped npm install. `docker compose up -d --wait db` and `npm test` in backend gave 17 files and 84 tests passing. Backend typecheck, web typecheck and web build all exited 0.
+b. PASS. I ran the exact demo command, which exited 0. /api/meta returned "demo_mode":true and the web page contained 'Demo mode:'. I then ran `docker compose down` and the plain up command. Both exited 0, and /api/meta shows "demo_mode":false. The normal stack is left running.
+c. PASS. No inaccuracies found.
+- All 7 linked screenshots and docs/deployment.md exist.
+- Ports 13000, 14000, 18025 and 15432 match docker-compose.yml.
+- The Render steps match render.yaml: the services invoice-reminders-api and invoice-reminders-web, the database invoice-reminders-db, and the three sync:false variables PUBLIC_API_URL, WEB_ORIGIN and NEXT_PUBLIC_API_URL.
+- Feature claims spot-checked and found in the code: the dashboard cards Outstanding, Overdue invoices, Reminders sent and Recovered after reminder, the "Run reminders now" button, the "Reset demo data" button, the seeded Friendly nudge and Final notice rules, and the 365-day limit in the rules route.
+- I did not check each remaining feature line. Examples are the one-email-per-invoice scheduler behaviour, the pay page, the Outbox and the mock Stripe import.
+- Minor: both the Live demo and Demo video lines are TODO placeholders, as the task specified.)
+CHANGES: none

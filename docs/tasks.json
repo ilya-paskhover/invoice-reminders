@@ -221,7 +221,7 @@
       "verify": "test -f README.md && grep -qF '## The problem' README.md && grep -qF '## Features' README.md && grep -qF '## Screenshots' README.md && grep -qF '## Architecture' README.md && grep -qF '## Tech stack' README.md && grep -qF '## Run locally' README.md && grep -qF '## Run the tests' README.md && grep -qF '## Demo mode' README.md && grep -qF '## Deploy to Render' README.md && grep -qF '## Limitations' README.md && grep -qF '## Next steps' README.md && grep -qF '```mermaid' README.md && grep -qF '52%' README.md && grep -qF 'https://clockify.me/late-invoice-statistics' README.md && grep -qF 'Live demo:' README.md && grep -qF 'Demo video:' README.md && grep -qF 'docker compose up -d --build --force-recreate --wait' README.md && grep -qF 'docker compose down' README.md && grep -qF 'docker-compose.demo.yml' README.md && grep -qF 'render.yaml' README.md && grep -qF 'docs/deployment.md' README.md && grep -qF 'DEMO_MODE' README.md && grep -qF 'npm test' README.md && grep -qF 'http://localhost:13000' README.md && ! grep -qE '15-30%|\\$6,000|70%|38%' README.md && node -e 'const fs=require(\"fs\");const t=fs.readFileSync(\"README.md\",\"utf8\");const m=[...new Set([...t.matchAll(/docs\\/screenshots\\/[a-z0-9-]+\\.png/g)].map(x=>x[0]))];if(m.length<7){console.error(\"screenshots linked:\",m.length);process.exit(1)}for(const f of m)fs.statSync(f)'",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     }
   ]
