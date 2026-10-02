@@ -1,4 +1,4 @@
-Next task: T14
+Next task: T15
 
 # Progress: invoice-reminders
 
@@ -395,3 +395,30 @@ BROWSER: n/a (safety check:
 - Normal mode invoices: 8 are numbered QA-..., there is no 'Harbor & Pine' client (grep count 0), and /api/invoices returns 13 invoices in total. The other 5 are "123" and STR-1001 to STR-1004. I read "8 invoices numbered QA-..." as the QA count, so I did not treat the extra 5 as a failure.
 - The stack is left running in normal mode.)
 CHANGES: none
+
+TASK: T14
+VERDICT: PASS
+COMMANDS:
+(smoke, T00) -> exit 0
+(T14) -> exit 0
+(extra demo step a: demo stack up) -> exit 0
+(extra demo step e: docker compose up normal mode) -> exit 0
+(extra demo step e: curl -fsS http://localhost:14000/api/meta) -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+- Step 1 PASS: http://localhost:13000/ showed no 'Demo mode' banner. Nav links Dashboard, Invoices, Rules and Outbox were all visible.
+- Step 2 PASS: Opened /invoices and clicked 'New invoice'. The browser clock reads about 4 hours behind UTC, so I computed UTC dates in the page. Today's UTC date was 2026-10-02, so the due date was 2026-09-29. I created invoice QA-O004720 with client 'Outbox Client', email outbox@client.test, amount 150.00. It appeared as the first row. 'Send next reminder' in that row showed 'Reminder sent: Friendly nudge'. I opened /invoices by URL rather than clicking the 'Invoices' nav link. I clicked 'New invoice' by ref, as a normal click.
+- Step 3 PASS: Clicking the 'Outbox' nav link opened /outbox with the heading 'Outbox'. The top email had subject 'Friendly reminder: invoice QA-O004720 is past due' and 'To: outbox@client.test'. Its status badge read 'sent' (plus a 'manual' badge). The body had 'Hi Outbox Client' and '$150.00', and the 'Open pay link' link was present.
+- Step 4 PASS: Clicking 'Open pay link' (to http://localhost:14000/pay/efaddfe5...) showed the heading 'Pay invoice QA-O004720' and the button 'Pay $150.00 (mock)'.
+- Demo a PASS: demo stack started and healthy.
+- Demo b PASS: The banner 'Demo mode: data resets daily and no real emails are sent.' with the 'Reset demo data' button was visible. Dashboard stats before the reset: Outstanding $10,330.00; Overdue 4 ($7,330.00); Reminders sent 10; Recovered after reminder 2 ($2,150.00).
+- Demo c PASS: 'Run reminders now' showed 'Run complete: checked 4, sent 0, failed 0'. 'Reset demo data' showed 'Demo data reset.' After it, the Dashboard showed Reminders sent 7 and Recovered after reminder 2 ($2,150.00).
+- Demo d PASS: In demo mode the Outbox lists seeded emails, newest first, starting with 'Friendly reminder: invoice INV-2043 is past due' to billing@kestrelfit.test (status scheduled, sent) with an 'Open pay link' link. At 375px the banner text wraps over 2 lines with the button below. There was no overlap or cut-off, and no horizontal overflow (scrollWidth 375). The screenshot is at C:\dev\poc-01\.poc-artifacts\t14-demo-375.png. Console errors: none (0 errors, 0 warnings).
+- Demo e PASS: Browser closed and normal mode restored. /api/meta returned {"demo_mode":false,"email_delivery":"smtp","last_reset_at":null,"next_reset_at":null}. The stack is left running in normal mode.
+CHANGES:
+ docs/tasks.json                    |  2 +-
+ web/src/app/layout.tsx             |  5 +++
+ web/src/app/outbox/page.tsx        | 89 ++++++++++++++++++++++++++++++++++++++
+ web/src/components/demo-banner.tsx | 47 ++++++++++++++++++++
+ web/src/components/nav.tsx         |  1 +
+ 5 files changed, 143 insertions(+), 1 deletion(-)

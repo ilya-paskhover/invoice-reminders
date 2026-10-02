@@ -191,7 +191,7 @@
         "Click 'Open pay link' in that first email. The page shows the heading 'Pay invoice QA-O...' (the number created above) and the button 'Pay $150.00 (mock)'."
       ],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

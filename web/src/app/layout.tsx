@@ -3,7 +3,10 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import "@fontsource-variable/inter";
 import "./globals.css";
+import { DemoBanner } from "@/components/demo-banner";
 import { Nav } from "@/components/nav";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Invoice Reminders",
@@ -11,9 +14,11 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const demo = process.env.DEMO_MODE === "true" || process.env.DEMO_MODE === "1";
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+        {demo && <DemoBanner />}
         <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-8 sm:px-6">
             <Link href="/" className="flex items-center gap-2.5">
