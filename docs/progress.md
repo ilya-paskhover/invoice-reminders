@@ -1,4 +1,4 @@
-Next task: T10
+Next task: T11
 
 # Progress: invoice-reminders
 
@@ -296,3 +296,58 @@ CHANGES:
  web/src/components/ui/table.tsx       |  29 ++++++
  web/src/lib/cn.ts                     |   3 +
  19 files changed, 401 insertions(+), 82 deletions(-)
+
+TASK: T10
+VERDICT: FAIL
+COMMANDS:
+(smoke, T00) -> exit 0
+(T10) -> exit 0
+FAILURE OUTPUT: Both commands passed. The FAIL is a layout defect found in the browser, described below (1280px desktop: the 'Mark paid' button is clipped on /invoices).
+BROWSER:
+- Step 1 PASS. The heading, both buttons, the All/Overdue/Paid tabs and all 9 column headers were visible. After clicking Import the message was 'Imported 0, skipped 4' (the mock rows already existed from earlier runs). The Northwind Coaching row (STR-1003) shows the Overdue badge.
+- Step 2 PASS. Number was QA-L000200. I did not use the real HHMMSS; the clock read 00:00:39 and I typed a similar value. Due date was 2026-09-20, which is 12 days before the UTC date 2026-10-02. The new row is first and shows Polish Client, $480.00, Overdue, Days overdue 12, Reminders 0, Last reminder '-'.
+- Step 3 PASS. The message 'Reminder sent: Friendly nudge' appeared, and the row showed Reminders 1 and Last reminder 'Friendly nudge'. The detail page has 'Back to invoices', the heading 'Invoice QA-L000200', the Overdue badge, the link 'Open customer pay link' and a Reminder history entry. The entry shows Friendly nudge, manual, sent and the subject 'Friendly reminder: invoice QA-L000200 is past due'.
+- Step 4 PASS. After 'Mark paid' the Status badge became Paid, and neither the 'Send next reminder' nor the 'Mark paid' button was shown. After 'Back to invoices' the first row shows Paid, Days overdue '-', and 0 buttons.
+- Step 5 PASS. The heading 'Reminder rules', the 'Add rule' button, all 5 headers and the row 'Final notice / 30 days' were visible. I clicked Edit on Final notice and set Subject to 'Hi {{unknown_field}}'. Save showed an alert inside the form: 'Unknown placeholder. Unknown placeholder {{unknown_field}}. Allowed: ...'. After Cancel the form closed and the row Subject is unchanged ('FINAL notice: invoice {{invoice_number}} is {{days_overdue}} days overdue').
+- Phone width 375x812 PASS. The page does not scroll horizontally on /invoices or /rules (scrollWidth equals clientWidth, 375). The tables scroll inside their cards and are cut off at the card edge, which is allowed. The header, nav wrap, buttons and filter tabs are readable and nothing overlaps.
+- DEFECT at desktop 1280px on /invoices. The table is 1206px wide inside a 1102px card, which has overflow-x auto. The Actions column therefore overflows and the 'Mark paid' button sits at x=1200 to 1279, outside the card (right edge 1192), so it is clipped. Only 'Send next reminder' is partly visible, and it touches the card edge. A first-time desktop user cannot see 'Mark paid' on the list without scrolling inside the card. I count this as a clear layout defect, so the verdict is FAIL. If the Actions column is meant to be reached by scrolling, treat the defect as a judgement call. The acceptance steps themselves all passed.
+- Visual notes. The design system is applied consistently: a white header with an indigo logo tile, an indigo active nav pill, card-wrapped tables, and colored status pills (green Paid and Active, red Overdue, blue Open, grey Inactive). /rules at 1280 fits cleanly. The /invoices/22 detail page showed the Status pill, a definition list and a Reminder history list. I took no screenshot of the detail page.
+- Console errors: only 'Failed to load resource: 400 (Bad Request) @ http://localhost:14000/api/rules/3'. It comes from the expected Unknown placeholder validation and is not a defect.
+- Stack: left running, and no Stop command was run. The browser is closed.
+CHANGES:
+ docs/tasks.json                    |   2 +-
+ web/src/app/invoices/[id]/page.tsx | 134 +++++++++++++++++++-----------
+ web/src/app/invoices/page.tsx      | 161 ++++++++++++++++++++-----------
+ web/src/app/rules/page.tsx         | 112 ++++++++++++++++----------
+ 4 files changed, 249 insertions(+), 160 deletions(-)
+(I changed no tracked files. The staged diff above was already there.)
+
+TASK: T10
+VERDICT: PASS
+COMMANDS:
+(smoke, T00) docker compose up ... && (cd web && npm run typecheck) -> exit 0
+(T10) cd web && npm run typecheck && npm run build && ... greps -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+- Step 1 PASS. All headings, buttons, tabs and table headers were visible. After Import, a message containing 'Imported' appeared. The Northwind Coaching row (STR-1003) showed the badge Overdue, 36 days, 3 reminders, Final notice.
+- Step 2 PASS. The form took the number, client, email, amount and due date. The first row showed Polish Client, $480.00, Overdue, Reminders 0, Last reminder '-'. Days overdue was 12 with a UTC-derived due date (2026-09-20). My first attempt used the local date (the browser is UTC+3, already Oct 3 local), which gave 11. That came from my date choice, not an app defect.
+- Step 3 PASS. 'Reminder sent: Friendly nudge' appeared. The row then showed Reminders 1 and Last reminder 'Friendly nudge'. The detail page had 'Back to invoices', the heading 'Invoice QA-L...', the Overdue badge and 'Open customer pay link'. Reminder history showed Friendly nudge, manual, sent, and 'Friendly reminder: invoice QA-L... is past due'.
+- Step 4 PASS. After Mark paid the status was Paid and Days overdue was '-'. 'Send next reminder' and 'Mark paid' were gone (0 each). Back on the list, the first row showed Paid, Days overdue '-' and 0 buttons.
+- Step 5 PASS. The Rules page showed 'Reminder rules', 'Add rule', all five headers, and the 'Final notice' row with '30 days'. Saving 'Hi {{unknown_field}}' showed the error 'Unknown placeholder {{unknown_field}}. Allowed: client_name...'. The error sits in the same card container as the Save button (the form is a div, not a form element). After Cancel the form closed and the Final notice subject was the original 'FINAL notice: invoice {{invoice_number}} is {{days_overdue}} days overdue'.
+- Layout at 1280 (first unpaid row): the table scrollWidth was 1102 and its container clientWidth was 1102, so there is no internal scroll. The card spans x 88 to 1192. 'Send next reminder' spans x 974 to 1108 and 'Mark paid' spans x 974 to 1053 (stacked), both inside the card. The document scrollWidth equals clientWidth at 1280. The earlier defect is fixed.
+- Layout at 1024: the table scrollWidth was 974 and its container clientWidth was 974, so there is no internal scroll. The card spans x 24 to 1000. 'Send next reminder' spans x 848 to 982 and 'Mark paid' spans x 848 to 927, both inside the card. The document scrollWidth equals clientWidth at 1024.
+- Layout at 375x812: /invoices document scrollWidth was 375 against clientWidth 375. /rules was 375 against 375. Neither page scrolls horizontally.
+- Visual notes: I did not look at the screenshots. The layout judgement rests on the measurements above.
+- Console errors: one, 'Failed to load resource: the server responded with a status of 400 (Bad Request)'. It came from the intentional unknown-placeholder save.
+- The browser is closed.
+- Side effect: my screenshots (m-inv.png, rules-err.png) may have been saved in the repo root as untracked files. I could not delete them. Please remove them if present. The stack is left running.
+CHANGES:
+ docs/progress.md                   |  25 ++++++
+ docs/tasks.json                    |   4 +-
+ web/src/app/invoices/[id]/page.tsx | 134 +++++++++++++++++++-----------
+ web/src/app/invoices/page.tsx      | 163 ++++++++++++++++++++-----------------
+ web/src/app/rules/page.tsx         | 112 +++++++++++++++----------
+ 5 files changed, 276 insertions(+), 162 deletions(-)
+(That is the staged diff, which I did not change. I changed no tracked files.)
+
+Main thread note: QA left two untracked screenshots (m-inv.png, rules-err.png) in the repo root. Instead of stopping, the main thread viewed them (no defects) and moved them out of the repo; no tracked file was changed.

@@ -142,8 +142,8 @@
         "Click the 'Rules' nav link. The heading 'Reminder rules', the button 'Add rule', the table headers 'Name', 'Days after due', 'Subject', 'Status', and 'Actions', and the row 'Final notice' with '30 days' are visible. Click 'Edit' in the 'Final notice' row, replace Subject with 'Hi {{unknown_field}}', and click 'Save'. An error containing 'Unknown placeholder' appears inside the form. Click 'Cancel'. The form closes and the 'Final notice' row's Subject does not contain 'unknown_field'."
       ],
       "manual_check": false,
-      "status": "failing",
-      "attempts": 0
+      "status": "passing",
+      "attempts": 1
     },
     {
       "id": "T11",

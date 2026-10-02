@@ -1,7 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { FileText } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Alert } from "@/components/ui/alert";
+import { StatusBadge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/field";
+import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, Td, Th, Tr } from "@/components/ui/table";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, parseAmountToCents } from "@/lib/format";
 
@@ -22,19 +32,16 @@ type Invoice = {
 
 type Filter = "all" | "overdue" | "paid";
 
-const badgeStyles: Record<string, string> = {
-  open: "bg-blue-100 text-blue-800",
-  overdue: "bg-red-100 text-red-800",
-  paid: "bg-green-100 text-green-800",
-};
-
-function badgeLabel(s: string) {
+function badgeStatus(s: string): "Open" | "Overdue" | "Paid" {
   const v = s.toLowerCase();
   return v === "paid" ? "Paid" : v === "overdue" ? "Overdue" : "Open";
 }
 
+const HEADS = ["Number", "Client", "Amount", "Due date", "Status", "Days overdue", "Reminders", "Last reminder", "Actions"];
+
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -51,6 +58,8 @@ export default function InvoicesPage() {
       setInvoices(await apiFetch<Invoice[]>(`/api/invoices?status=${f}`));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load invoices");
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
@@ -126,113 +135,121 @@ export default function InvoicesPage() {
     }
   }
 
-  const input = "mt-1 block w-full rounded border px-2 py-1";
-  const btn = "rounded border bg-white px-3 py-1 text-sm hover:bg-gray-100";
+  const lbl = "block text-sm font-medium text-slate-700";
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Invoices</h1>
-        <div className="flex gap-2">
-          <button type="button" className={btn} onClick={importMock}>Import from Stripe (mock)</button>
-          <button type="button" className={btn} onClick={() => setShowForm((v) => !v)}>New invoice</button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Invoices"
+        actions={
+          <>
+            <Button onClick={importMock}>Import from Stripe (mock)</Button>
+            <Button variant="primary" onClick={() => setShowForm((v) => !v)}>New invoice</Button>
+          </>
+        }
+      />
 
-      {message && <p className="mt-3 text-sm text-green-700">{message}</p>}
-      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {message && <Alert tone="success">{message}</Alert>}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {showForm && (
-        <div className="mt-4 rounded border bg-white p-4">
-          {formError && <p className="mb-3 text-sm text-red-700">{formError}</p>}
-          <form onSubmit={createInvoice} className="grid grid-cols-2 gap-4">
+        <Card className="p-4 sm:p-6">
+          {formError && <Alert tone="error" className="mb-4">{formError}</Alert>}
+          <form onSubmit={createInvoice} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="inv-number">Number</label>
-              <input id="inv-number" className={input} value={number} onChange={(e) => setNumber(e.target.value)} />
+              <label htmlFor="inv-number" className={lbl}>Number</label>
+              <Input id="inv-number" className="mt-1" value={number} onChange={(e) => setNumber(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="inv-client-name">Client name</label>
-              <input id="inv-client-name" className={input} value={clientName} onChange={(e) => setClientName(e.target.value)} />
+              <label htmlFor="inv-client-name" className={lbl}>Client name</label>
+              <Input id="inv-client-name" className="mt-1" value={clientName} onChange={(e) => setClientName(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="inv-client-email">Client email</label>
-              <input id="inv-client-email" className={input} value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} />
+              <label htmlFor="inv-client-email" className={lbl}>Client email</label>
+              <Input id="inv-client-email" className="mt-1" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="inv-amount">Amount</label>
-              <input id="inv-amount" className={input} value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <label htmlFor="inv-amount" className={lbl}>Amount</label>
+              <Input id="inv-amount" className="mt-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="inv-due-date">Due date</label>
-              <input id="inv-due-date" type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              <label htmlFor="inv-due-date" className={lbl}>Due date</label>
+              <Input id="inv-due-date" type="date" className="mt-1" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
             <div className="flex items-end">
-              <button type="submit" className={btn}>Create invoice</button>
+              <Button type="submit" variant="primary" className="w-full sm:w-auto">Create invoice</Button>
             </div>
           </form>
-        </div>
+        </Card>
       )}
 
-      <div className="mt-6 flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {([["all", "All"], ["overdue", "Overdue"], ["paid", "Paid"]] as const).map(([key, label]) => (
-          <button
+          <Button
             key={key}
-            type="button"
+            size="sm"
+            variant={filter === key ? "primary" : "secondary"}
             aria-pressed={filter === key}
-            className={`${btn} ${filter === key ? "bg-gray-200 font-semibold" : ""}`}
             onClick={() => setFilter(key)}
           >
             {label}
-          </button>
+          </Button>
         ))}
       </div>
 
-      <table className="mt-4 w-full border bg-white text-left text-sm">
-        <thead className="border-b bg-gray-100">
+      <Table>
+        <thead>
           <tr>
-            <th className="p-2">Number</th>
-            <th className="p-2">Client</th>
-            <th className="p-2">Amount</th>
-            <th className="p-2">Due date</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Days overdue</th>
-            <th className="p-2">Reminders</th>
-            <th className="p-2">Last reminder</th>
-            <th className="p-2">Actions</th>
+            {HEADS.map((h) => (
+              <Th key={h} className="!px-3">{h}</Th>
+            ))}
           </tr>
         </thead>
         <tbody>
+          {!loaded &&
+            [0, 1, 2].map((i) => (
+              <Tr key={`sk-${i}`}>
+                <Td colSpan={HEADS.length}>
+                  <Skeleton className="h-5 w-full" />
+                </Td>
+              </Tr>
+            ))}
+          {loaded && invoices.length === 0 && (
+            <tr>
+              <td colSpan={HEADS.length}>
+                <EmptyState icon={<FileText className="h-5 w-5" />}>No invoices yet. Create one or import from Stripe (mock).</EmptyState>
+              </td>
+            </tr>
+          )}
           {invoices.map((inv) => {
             const paid = inv.display_status.toLowerCase() === "paid";
             return (
-              <tr key={inv.id} className="border-b">
-                <td className="p-2">
-                  <Link href={`/invoices/${inv.id}`} className="text-blue-700 hover:underline">{inv.number}</Link>
-                </td>
-                <td className="p-2">{inv.client_name}</td>
-                <td className="p-2">{formatMoney(inv.amount_cents, inv.currency)}</td>
-                <td className="p-2">{inv.due_date.slice(0, 10)}</td>
-                <td className="p-2">
-                  <span className={`rounded px-2 py-0.5 text-xs ${badgeStyles[inv.display_status.toLowerCase()] ?? ""}`}>
-                    {badgeLabel(inv.display_status)}
-                  </span>
-                </td>
-                <td className="p-2">{!paid && inv.days_overdue > 0 ? inv.days_overdue : "-"}</td>
-                <td className="p-2">{inv.reminders_sent}</td>
-                <td className="p-2">{inv.last_reminder ? inv.last_reminder.rule_name : "-"}</td>
-                <td className="p-2">
+              <Tr key={inv.id}>
+                <Td className="!px-3">
+                  <Link href={`/invoices/${inv.id}`} className="font-medium text-indigo-600 hover:underline">{inv.number}</Link>
+                </Td>
+                <Td className="!px-3 !whitespace-normal">{inv.client_name}</Td>
+                <Td className="!px-3">{formatMoney(inv.amount_cents, inv.currency)}</Td>
+                <Td className="!px-3">{inv.due_date.slice(0, 10)}</Td>
+                <Td className="!px-3">
+                  <StatusBadge status={badgeStatus(inv.display_status)} />
+                </Td>
+                <Td className="!px-3">{!paid && inv.days_overdue > 0 ? inv.days_overdue : "-"}</Td>
+                <Td className="!px-3">{inv.reminders_sent}</Td>
+                <Td className="!px-3 !whitespace-normal">{inv.last_reminder ? inv.last_reminder.rule_name : "-"}</Td>
+                <Td className="!px-3 !whitespace-normal">
                   {!paid && (
-                    <div className="flex gap-2">
-                      <button type="button" className={btn} onClick={() => sendReminder(inv.id)}>Send next reminder</button>
-                      <button type="button" className={btn} onClick={() => markPaid(inv.id)}>Mark paid</button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" className="whitespace-nowrap" onClick={() => sendReminder(inv.id)}>Send next reminder</Button>
+                      <Button size="sm" className="whitespace-nowrap" onClick={() => markPaid(inv.id)}>Mark paid</Button>
                     </div>
                   )}
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             );
           })}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 }

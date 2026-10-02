@@ -1,6 +1,16 @@
 "use client";
 
+import { ListChecks } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Input, Textarea } from "@/components/ui/field";
+import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, Td, Th, Tr } from "@/components/ui/table";
 import { apiFetch } from "@/lib/api";
 
 type Rule = {
@@ -22,8 +32,11 @@ const PLACEHOLDERS = [
   "pay_link",
 ];
 
+const HEADS = ["Name", "Days after due", "Subject", "Status", "Actions"];
+
 export default function RulesPage() {
   const [rules, setRules] = useState<Rule[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -38,6 +51,8 @@ export default function RulesPage() {
       setRules(await apiFetch<Rule[]>("/api/rules"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load rules");
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
@@ -112,75 +127,90 @@ export default function RulesPage() {
     }
   }
 
-  const input = "mt-1 block w-full rounded border px-2 py-1";
-  const btn = "rounded border bg-white px-3 py-1 text-sm hover:bg-gray-100";
+  const lbl = "block text-sm font-medium text-slate-700";
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Reminder rules</h1>
-        <button type="button" className={btn} onClick={openAdd}>Add rule</button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Reminder rules" actions={<Button variant="primary" onClick={openAdd}>Add rule</Button>} />
 
-      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {formOpen && (
-        <div className="mt-4 rounded border bg-white p-4">
-          {formError && <p className="mb-3 text-sm text-red-700">{formError}</p>}
+        <Card className="p-4 sm:p-6">
+          {formError && <Alert tone="error" className="mb-4">{formError}</Alert>}
           <form onSubmit={submit} className="grid gap-4">
             <div>
-              <label htmlFor="rule-name">Name</label>
-              <input id="rule-name" className={input} value={name} onChange={(e) => setName(e.target.value)} />
+              <label htmlFor="rule-name" className={lbl}>Name</label>
+              <Input id="rule-name" className="mt-1" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="rule-days">Days after due</label>
-              <input id="rule-days" type="number" min={0} className={input} value={days} onChange={(e) => setDays(e.target.value)} />
+              <label htmlFor="rule-days" className={lbl}>Days after due</label>
+              <Input id="rule-days" type="number" min={0} className="mt-1" value={days} onChange={(e) => setDays(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="rule-subject">Subject</label>
-              <input id="rule-subject" className={input} value={subject} onChange={(e) => setSubject(e.target.value)} />
+              <label htmlFor="rule-subject" className={lbl}>Subject</label>
+              <Input id="rule-subject" className="mt-1" value={subject} onChange={(e) => setSubject(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="rule-body">Body</label>
-              <textarea id="rule-body" rows={6} className={input} value={body} onChange={(e) => setBody(e.target.value)} />
+              <label htmlFor="rule-body" className={lbl}>Body</label>
+              <Textarea id="rule-body" rows={6} className="mt-1" value={body} onChange={(e) => setBody(e.target.value)} />
             </div>
-            <p className="text-xs text-gray-600">
+            <p className="break-words text-xs text-slate-500">
               Allowed placeholders: {PLACEHOLDERS.map((p) => `{{${p}}}`).join(", ")}
             </p>
-            <div className="flex gap-2">
-              <button type="submit" className={btn}>{editingId === null ? "Create rule" : "Save"}</button>
-              <button type="button" className={btn} onClick={cancel}>Cancel</button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" variant="primary">{editingId === null ? "Create rule" : "Save"}</Button>
+              <Button onClick={cancel}>Cancel</Button>
             </div>
           </form>
-        </div>
+        </Card>
       )}
 
-      <table className="mt-6 w-full border bg-white text-left text-sm">
-        <thead className="border-b bg-gray-100">
+      <Table>
+        <thead>
           <tr>
-            <th className="p-2">Name</th>
-            <th className="p-2">Days after due</th>
-            <th className="p-2">Subject</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Actions</th>
+            {HEADS.map((h) => (
+              <Th key={h}>{h}</Th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {rules.map((r) => (
-            <tr key={r.id} className="border-b">
-              <td className="p-2">{r.name}</td>
-              <td className="p-2">{r.offset_days} days</td>
-              <td className="p-2">{r.subject_template}</td>
-              <td className="p-2">
-                <button type="button" className={btn} onClick={() => toggle(r)}>{r.active ? "Active" : "Inactive"}</button>
-              </td>
-              <td className="p-2">
-                <button type="button" className={btn} onClick={() => openEdit(r)}>Edit</button>
+          {!loaded &&
+            [0, 1, 2].map((i) => (
+              <Tr key={`sk-${i}`}>
+                <Td colSpan={HEADS.length}>
+                  <Skeleton className="h-5 w-full" />
+                </Td>
+              </Tr>
+            ))}
+          {loaded && rules.length === 0 && (
+            <tr>
+              <td colSpan={HEADS.length}>
+                <EmptyState icon={<ListChecks className="h-5 w-5" />}>No reminder rules yet. Add one to get started.</EmptyState>
               </td>
             </tr>
+          )}
+          {rules.map((r) => (
+            <Tr key={r.id}>
+              <Td className="font-medium text-slate-900">{r.name}</Td>
+              <Td>{r.offset_days} days</Td>
+              <Td className="min-w-[16rem] whitespace-normal break-words">{r.subject_template}</Td>
+              <Td>
+                <button
+                  type="button"
+                  onClick={() => toggle(r)}
+                  className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
+                  <Badge tone={r.active ? "emerald" : "slate"} dot>{r.active ? "Active" : "Inactive"}</Badge>
+                </button>
+              </Td>
+              <Td>
+                <Button size="sm" onClick={() => openEdit(r)}>Edit</Button>
+              </Td>
+            </Tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 }
