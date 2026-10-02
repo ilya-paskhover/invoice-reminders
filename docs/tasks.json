@@ -176,7 +176,7 @@
       "verify": "docker compose up -d --build --force-recreate --wait && (cd backend && npm run typecheck && npm test) && grep -qF 'DEMO_WRITE_RATE_LIMIT' .env.example && grep -qF 'TRUST_PROXY' .env.example && curl -fsS 'http://localhost:14000/api/outbox?limit=5' | grep -q '^\\[' && curl -fsS http://localhost:14000/api/meta | grep -qF '\"demo_mode\":false' && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/meta | grep -qF '\"email_delivery\":\"suppressed\"' && docker compose up -d --build --force-recreate --wait",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

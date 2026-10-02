@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type pg from "pg";
 import { z } from "zod";
+import type { Config } from "../config";
 import { ALLOWED_PLACEHOLDERS, findUnknownPlaceholders } from "../reminders/templates";
 
 const fields = {
@@ -42,7 +43,7 @@ function placeholderError(reply: FastifyReply, data: Record<string, unknown>) {
   });
 }
 
-export function registerRuleRoutes(app: FastifyInstance, pool: pg.Pool): void {
+export function registerRuleRoutes(app: FastifyInstance, pool: pg.Pool, config?: Config): void {
   app.get("/api/rules", async () => {
     const { rows } = await pool.query(
       `SELECT ${COLS} FROM reminder_rules ORDER BY offset_days ASC, id ASC`,
@@ -56,6 +57,14 @@ export function registerRuleRoutes(app: FastifyInstance, pool: pg.Pool): void {
     const bad = placeholderError(reply, p.data);
     if (bad) return bad;
     const d = p.data;
+    if (config?.demoMode) {
+      const c = await pool.query("SELECT count(*)::int AS n FROM reminder_rules");
+      if (c.rows[0].n >= config.demoMaxRules) {
+        return reply.code(409).send({
+          error: `Demo limit reached: at most ${config.demoMaxRules} rules. Use Reset demo data.`,
+        });
+      }
+    }
     const { rows } = await pool.query(
       `INSERT INTO reminder_rules (name, offset_days, subject_template, body_template, active)
        VALUES ($1,$2,$3,$4,$5) RETURNING ${COLS}`,

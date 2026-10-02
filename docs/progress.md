@@ -1,4 +1,4 @@
-Next task: T13
+Next task: T14
 
 # Progress: invoice-reminders
 
@@ -380,3 +380,18 @@ COMMANDS:
 FAILURE OUTPUT: none
 BROWSER: n/a (safety check: 13 invoices, 8 with QA- numbers, no Harbor & Pine Interiors client in normal mode; checked again after command 2 had finished, same result. Stack left running in normal mode.)
 CHANGES: none (I changed no files; I only ran `git diff --cached --stat`, which showed the already-staged work, 17 files changed, 403 insertions, 30 deletions.)
+
+TASK: T13
+VERDICT: PASS
+COMMANDS:
+1. (smoke, T00) -> exit 0
+2. (T13) -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a (safety check:
+- Mailpit total before: 0 (messages_count 0). After reset and run: 0 (messages_count 0). Unchanged.
+- Reset returned {"invoices":9,"reminders":7}. Run returned checked 4, sent 3, failed 0 (STR-1001, STR-1002, STR-1003).
+- /api/outbox?limit=5 listed the just-sent reminders. The first entry is STR-1003, to pay@northwind.test, subject "Final notice: invoice STR-1003 is 35 days overdue", status sent.
+- Normal mode: /api/meta returned {"demo_mode":false,"email_delivery":"smtp","last_reset_at":null,"next_reset_at":null}.
+- Normal mode invoices: 8 are numbered QA-..., there is no 'Harbor & Pine' client (grep count 0), and /api/invoices returns 13 invoices in total. The other 5 are "123" and STR-1001 to STR-1004. I read "8 invoices numbered QA-..." as the QA count, so I did not treat the extra 5 as a failure.
+- The stack is left running in normal mode.)
+CHANGES: none

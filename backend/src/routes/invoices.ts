@@ -16,7 +16,7 @@ const dateStr = z
 const createSchema = z.object({
   number: z.string().min(1).max(50),
   client_name: z.string().min(1).max(200),
-  client_email: z.email(),
+  client_email: z.email().max(254),
   amount_cents: z.number().int().positive().max(2147483647),
   currency: z
     .string()
@@ -99,6 +99,14 @@ export function registerInvoiceRoutes(app: FastifyInstance, pool: pg.Pool, confi
     const p = createSchema.safeParse(req.body ?? {});
     if (!p.success) return validationError(reply, p.error);
     const d = p.data;
+    if (config.demoMode) {
+      const c = await pool.query("SELECT count(*)::int AS n FROM invoices");
+      if (c.rows[0].n >= config.demoMaxInvoices) {
+        return reply.code(409).send({
+          error: `Demo limit reached: at most ${config.demoMaxInvoices} invoices. Use Reset demo data.`,
+        });
+      }
+    }
     const { rows } = await pool.query(
       `INSERT INTO invoices (number, client_name, client_email, amount_cents, currency, issue_date, due_date, pay_token)
        VALUES ($1,$2,$3,$4,$5,COALESCE($6::date, current_date),$7,$8) RETURNING id`,

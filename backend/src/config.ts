@@ -14,6 +14,10 @@ export interface Config {
   demoMode: boolean;
   demoResetCheckSeconds: number;
   dbCreateIfMissing: boolean;
+  demoWriteRateLimit: number;
+  demoMaxInvoices: number;
+  demoMaxRules: number;
+  trustProxy: boolean;
 }
 
 function flag(v: string | undefined): boolean {
@@ -38,5 +42,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     demoMode: flag(env.DEMO_MODE),
     demoResetCheckSeconds: Number(env.DEMO_RESET_CHECK_SECONDS ?? 900),
     dbCreateIfMissing: flag(env.DB_CREATE_IF_MISSING),
+    demoWriteRateLimit: Number(env.DEMO_WRITE_RATE_LIMIT ?? 30),
+    demoMaxInvoices: Number(env.DEMO_MAX_INVOICES ?? 200),
+    demoMaxRules: Number(env.DEMO_MAX_RULES ?? 20),
+    trustProxy: flag(env.TRUST_PROXY),
   };
 }
