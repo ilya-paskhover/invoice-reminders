@@ -1,4 +1,4 @@
-Next task: FINISH
+Next task: T09
 
 # Progress: invoice-reminders
 
@@ -257,3 +257,7 @@ Stop: `docker compose down` (keeps the database volume)
 URLs: web http://localhost:13000, API http://localhost:14000, Mailpit inbox http://localhost:18025.
 
 Tasks needing a manual hands-on check (`manual_check`): none.
+
+## Phase 2 plan (2026-10-02)
+
+Planned by architect-planner. T09 to T17 were added to `docs/tasks.json` (all `failing`, attempts 0). T00 to T08 are unchanged. The spec is `docs/poc-spec.md` section 11. Order: UI polish (T09 to T11), demo mode (T12 to T14), Render deployment config (T15), screenshots (T16), README (T17). Demo start: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait`; `Start:` returns to normal mode.

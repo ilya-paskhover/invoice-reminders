@@ -114,6 +114,115 @@
       "manual_check": false,
       "status": "passing",
       "attempts": 0
+    },
+    {
+      "id": "T09",
+      "name": "UI polish 1: design system components in web/src/components/ui, responsive layout, nav with active state, favicon, Dashboard restyle (keep every T00-T08 verify and acceptance literal text unchanged, spec 11.1)",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && ls web/src/components/ui/button.tsx web/src/components/ui/card.tsx web/src/components/ui/badge.tsx web/src/components/ui/stat-card.tsx web/src/components/ui/empty-state.tsx web/src/components/ui/skeleton.tsx web/src/components/nav.tsx > /dev/null && docker compose up -d --build --force-recreate --wait && mkdir -p .poc-artifacts && curl -fsS http://localhost:13000/ -o .poc-artifacts/t09-home.html && grep -qF 'Invoice Reminders' .poc-artifacts/t09-home.html && grep -qF 'Run reminders now' .poc-artifacts/t09-home.html && grep -qF 'Outstanding' .poc-artifacts/t09-home.html && grep -qF 'Overdue invoices' .poc-artifacts/t09-home.html && grep -qF 'Reminders sent' .poc-artifacts/t09-home.html && grep -qF 'Recovered after reminder' .poc-artifacts/t09-home.html && grep -qF 'Scheduler:' .poc-artifacts/t09-home.html && grep -qF 'Recent activity' .poc-artifacts/t09-home.html && grep -qF 'aria-current=\"page\"' .poc-artifacts/t09-home.html && grep -qF 'rel=\"icon\"' .poc-artifacts/t09-home.html",
+      "acceptance": [
+        "Open http://localhost:13000/. The header shows 'Invoice Reminders' and the nav links 'Dashboard', 'Invoices', and 'Rules'. The heading 'Dashboard', the button 'Run reminders now', four stat cards labelled 'Outstanding', 'Overdue invoices', 'Reminders sent', and 'Recovered after reminder' (after loading, each shows a number or money amount, not '-'), a line starting with 'Scheduler: every 60 min', and the section heading 'Recent activity' are visible. The literal texts are exactly as written here (not upper-cased).",
+        "Click the 'Invoices' nav link, click 'New invoice', fill Number with 'QA-S' followed by the current time as HHMMSS, Client name 'Stats Client', Client email 'stats@client.test', Amount '300.00', Due date 12 days before today, and click 'Create invoice'. Click the 'Dashboard' nav link and note the 'Reminders sent' number. Click 'Run reminders now'. A message starting with 'Run complete:' appears, the 'Reminders sent' number is at least 1 higher than noted, and 'Recent activity' has an entry with the QA-S number, 'Stats Client', 'Firm reminder', 'scheduled', and 'sent'.",
+        "Click the QA-S number link in that 'Recent activity' entry. The invoice detail page opens with the link 'Back to invoices', the heading 'Invoice QA-S...' (the number created above), and under 'Reminder history' an entry showing 'Firm reminder' and 'scheduled'."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T10",
+      "name": "UI polish 2: Invoices list, Invoice detail and Rules pages restyled with the design system, empty and loading states, phone-width layout (keep every T00-T08 verify and acceptance literal text unchanged, spec 11.1)",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && docker compose up -d --build --force-recreate --wait && mkdir -p .poc-artifacts && curl -fsS http://localhost:13000/invoices -o .poc-artifacts/t10-invoices.html && curl -fsS http://localhost:13000/invoices/1 -o .poc-artifacts/t10-detail.html && curl -fsS http://localhost:13000/rules -o .poc-artifacts/t10-rules.html && grep -qF 'Import from Stripe (mock)' .poc-artifacts/t10-invoices.html && grep -qF 'New invoice' .poc-artifacts/t10-invoices.html && grep -qF 'Days overdue' .poc-artifacts/t10-invoices.html && grep -qF 'Last reminder' .poc-artifacts/t10-invoices.html && grep -qF 'Back to invoices' .poc-artifacts/t10-detail.html && grep -qF 'Reminder rules' .poc-artifacts/t10-rules.html && grep -qF 'Add rule' .poc-artifacts/t10-rules.html && grep -qF 'Days after due' .poc-artifacts/t10-rules.html",
+      "acceptance": [
+        "Open http://localhost:13000/invoices. The heading 'Invoices', the buttons 'Import from Stripe (mock)' and 'New invoice', the filter tabs 'All', 'Overdue', and 'Paid', and the table headers 'Number', 'Client', 'Amount', 'Due date', 'Status', 'Days overdue', 'Reminders', 'Last reminder', and 'Actions' are visible. Click 'Import from Stripe (mock)'. A message starting with 'Imported' appears, and a row whose Client is 'Northwind Coaching' shows the Status badge 'Overdue'.",
+        "Click 'New invoice'. Fill Number with 'QA-L' followed by the current time as HHMMSS, Client name 'Polish Client', Client email 'polish@client.test', Amount '480.00', and Due date with the date 12 days before today, then click 'Create invoice'. The first table row shows that Number, Client 'Polish Client', Amount '$480.00', Status badge 'Overdue', Days overdue '12' (13 is acceptable only if the UTC date is already tomorrow), Reminders '0', and Last reminder '-'.",
+        "Click 'Send next reminder' in the first row. The message 'Reminder sent: Friendly nudge' appears, and the first row shows Reminders '1' and Last reminder 'Friendly nudge'. Click the Number link in the first row. The detail page shows the link 'Back to invoices', the heading 'Invoice QA-L...' (the number created above), the Status badge 'Overdue', the link 'Open customer pay link', and under 'Reminder history' one entry showing 'Friendly nudge', 'manual', 'sent', and the subject 'Friendly reminder: invoice QA-L... is past due'.",
+        "Click 'Mark paid' on the detail page. The Status badge changes to 'Paid', and the 'Send next reminder' and 'Mark paid' buttons are no longer shown. Click 'Back to invoices'. The first table row shows the Status badge 'Paid', Days overdue '-', and no 'Send next reminder' or 'Mark paid' button.",
+        "Click the 'Rules' nav link. The heading 'Reminder rules', the button 'Add rule', the table headers 'Name', 'Days after due', 'Subject', 'Status', and 'Actions', and the row 'Final notice' with '30 days' are visible. Click 'Edit' in the 'Final notice' row, replace Subject with 'Hi {{unknown_field}}', and click 'Save'. An error containing 'Unknown placeholder' appears inside the form. Click 'Cancel'. The form closes and the 'Final notice' row's Subject does not contain 'unknown_field'."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T11",
+      "name": "UI polish 3: API mock pay pages restyled with a shared responsive HTML shell, inline CSS, favicon routes (keep 'Pay invoice <number>', 'Pay $300.00 (mock)', 'This invoice is already paid.', 'Payment received. Thank you!', 'Payment link not found' unchanged, spec 11.1 and 11.3)",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --build --force-recreate --wait && cd backend && npm run typecheck && npm test -- tests/pay.test.ts tests/pay-page.test.ts && curl -fsS http://localhost:14000/favicon.svg | grep -qF '<svg' && curl -s -o /dev/null -w '%{http_code}' http://localhost:14000/pay/no-such-token | grep -qx 404 && curl -s http://localhost:14000/pay/no-such-token | grep -qF 'Payment link not found'",
+      "acceptance": [
+        "Open http://localhost:13000/invoices, click 'New invoice', fill Number with 'QA-K' followed by the current time as HHMMSS, Client name 'Checkout Client', Client email 'checkout@client.test', Amount '120.00', Due date 5 days before today, and click 'Create invoice'. Click the Number link in the first row, then click 'Open customer pay link'. The pay page shows the business name 'Demo Studio', the heading 'Pay invoice QA-K...' (the number created above), 'Checkout Client', the amount '$120.00', the text 'Mock checkout. No real payment is taken.', and the button 'Pay $120.00 (mock)', laid out in a centred white card on a tinted background.",
+        "Click 'Pay $120.00 (mock)'. The page shows 'Payment received. Thank you!' in the same card layout.",
+        "Open http://localhost:13000/invoices, click the QA-K Number link in the first row, and click 'Open customer pay link' again. The page shows 'This invoice is already paid.' and no 'Pay $120.00 (mock)' button."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T12",
+      "name": "Demo data: DEMO_MODE flag, DB_CREATE_IF_MISSING, demo_state migration, deterministic demo seed and daily reset (never touches the DB unless DEMO_MODE is on), POST /api/demo/reset, docker-compose.demo.yml override",
+      "agent": "backend-infra-dev",
+      "verify": "grep -qF 'DEMO_MODE' .env.example && grep -qF 'DB_CREATE_IF_MISSING' .env.example && docker compose up -d --force-recreate --wait db && (cd backend && npm run typecheck && npm test -- tests/demo.test.ts tests/import.test.ts) && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && curl -fsS -X POST http://localhost:14000/api/demo/reset | grep -qF '\"invoices\":9' && curl -fsS http://localhost:14000/api/stats | grep -qF '\"reminders_sent\":7' && curl -fsS http://localhost:14000/api/stats | grep -qF '\"paid_after_reminder_count\":2' && curl -fsS http://localhost:14000/api/invoices | grep -qF 'Harbor & Pine Interiors' && docker compose up -d --build --force-recreate --wait && curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:14000/api/demo/reset | grep -qx 404",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T13",
+      "name": "Demo safety: email always suppressed in demo mode, GET /api/meta, GET /api/outbox, demo-only rate limits on write endpoints, invoice and rule caps, body limit, trust proxy",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --build --force-recreate --wait && (cd backend && npm run typecheck && npm test) && grep -qF 'DEMO_WRITE_RATE_LIMIT' .env.example && grep -qF 'TRUST_PROXY' .env.example && curl -fsS 'http://localhost:14000/api/outbox?limit=5' | grep -q '^\\[' && curl -fsS http://localhost:14000/api/meta | grep -qF '\"demo_mode\":false' && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/meta | grep -qF '\"email_delivery\":\"suppressed\"' && docker compose up -d --build --force-recreate --wait",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T14",
+      "name": "Web: demo-mode banner with Reset demo data (server-rendered from runtime DEMO_MODE), Outbox page listing sent reminder emails, Outbox nav link (keep every T00-T08 verify and acceptance literal text unchanged, spec 11.1)",
+      "agent": "fullstack-dev",
+      "verify": "cd web && npm run typecheck && npm run build && cd .. && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && mkdir -p .poc-artifacts && curl -fsS http://localhost:13000/ -o .poc-artifacts/t14-demo-home.html && grep -qF 'Demo mode: data resets daily and no real emails are sent.' .poc-artifacts/t14-demo-home.html && grep -qF 'Reset demo data' .poc-artifacts/t14-demo-home.html && grep -qF 'Outbox' .poc-artifacts/t14-demo-home.html && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:13000/ -o .poc-artifacts/t14-home.html && grep -qF 'Invoice Reminders' .poc-artifacts/t14-home.html && ! grep -qF 'Demo mode:' .poc-artifacts/t14-home.html && curl -fsS http://localhost:13000/outbox | grep -qF 'Reminder emails sent by the app, newest first.'",
+      "acceptance": [
+        "Open http://localhost:13000/. No banner containing 'Demo mode' is shown (the app runs in normal mode), and the nav links 'Dashboard', 'Invoices', 'Rules', and 'Outbox' are visible.",
+        "Click the 'Invoices' nav link, click 'New invoice', fill Number with 'QA-O' followed by the current time as HHMMSS, Client name 'Outbox Client', Client email 'outbox@client.test', Amount '150.00', Due date 3 days before today, and click 'Create invoice'. Click 'Send next reminder' in the first row. The message 'Reminder sent: Friendly nudge' appears.",
+        "Click the 'Outbox' nav link. The heading 'Outbox' is visible, and the first (top) email shows 'To: outbox@client.test', the subject 'Friendly reminder: invoice QA-O... is past due' (the number created above), the status 'sent', a body that includes 'Hi Outbox Client' and '$150.00', and the link 'Open pay link'.",
+        "Click 'Open pay link' in that first email. The page shows the heading 'Pay invoice QA-O...' (the number created above) and the button 'Pay $150.00 (mock)'."
+      ],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T15",
+      "name": "Deployment config for Render: render.yaml Blueprint (api, web, managed Postgres), production Dockerfiles (non-root, no dev deps), graceful shutdown, DATABASE_SSL, docs/deployment.md, deploy-config test (no real deploy)",
+      "agent": "backend-infra-dev",
+      "verify": "docker compose up -d --force-recreate --wait db && (cd backend && npm run typecheck && npm test -- tests/deploy-config.test.ts) && docker build -q -t invoice-reminders-api:prod backend > /dev/null && docker build -q --build-arg NEXT_PUBLIC_API_URL=https://api.invoice-reminders.example.test -t invoice-reminders-web:prod web > /dev/null && test \"$(docker run --rm invoice-reminders-api:prod id -u)\" != \"0\" && test \"$(docker run --rm invoice-reminders-web:prod id -u)\" != \"0\" && docker run --rm invoice-reminders-api:prod sh -c 'test ! -e node_modules/vitest && test -d migrations' && docker run --rm invoice-reminders-web:prod sh -c 'grep -rqF https://api.invoice-reminders.example.test .next/static' && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '\"db\":\"ok\"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders'",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T16",
+      "name": "Screenshots: Playwright (web devDependency, browser installed inside web/node_modules) script that resets the local demo stack and captures 7 screenshots; commit docs/screenshots/*.png",
+      "agent": "fullstack-dev",
+      "verify": "grep -qF '\"playwright\"' web/package.json && cd web && npm run typecheck && cd .. && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && (cd web && npm run screenshots -- --out ../.poc-artifacts/screenshots) && node -e 'const fs=require(\"fs\");for(const d of [\".poc-artifacts/screenshots\",\"docs/screenshots\"])for(const n of [\"dashboard\",\"invoices\",\"invoice-detail\",\"rules\",\"outbox\",\"pay-page\",\"dashboard-mobile\"]){const s=fs.statSync(d+\"/\"+n+\".png\").size;if(s<15000){console.error(d,n,s);process.exit(1)}}' && docker compose up -d --build --force-recreate --wait",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
+    },
+    {
+      "id": "T17",
+      "name": "README.md for portfolio readers: problem with Read-backed figures only, features, screenshots, Mermaid architecture, tech stack, run locally, tests, demo mode, Render deploy steps, limitations, next steps, live demo and video placeholders",
+      "agent": "backend-infra-dev",
+      "verify": "test -f README.md && grep -qF '## The problem' README.md && grep -qF '## Features' README.md && grep -qF '## Screenshots' README.md && grep -qF '## Architecture' README.md && grep -qF '## Tech stack' README.md && grep -qF '## Run locally' README.md && grep -qF '## Run the tests' README.md && grep -qF '## Demo mode' README.md && grep -qF '## Deploy to Render' README.md && grep -qF '## Limitations' README.md && grep -qF '## Next steps' README.md && grep -qF '```mermaid' README.md && grep -qF '52%' README.md && grep -qF 'https://clockify.me/late-invoice-statistics' README.md && grep -qF 'Live demo:' README.md && grep -qF 'Demo video:' README.md && grep -qF 'docker compose up -d --build --force-recreate --wait' README.md && grep -qF 'docker compose down' README.md && grep -qF 'docker-compose.demo.yml' README.md && grep -qF 'render.yaml' README.md && grep -qF 'docs/deployment.md' README.md && grep -qF 'DEMO_MODE' README.md && grep -qF 'npm test' README.md && grep -qF 'http://localhost:13000' README.md && ! grep -qE '15-30%|\\$6,000|70%|38%' README.md && node -e 'const fs=require(\"fs\");const t=fs.readFileSync(\"README.md\",\"utf8\");const m=[...new Set([...t.matchAll(/docs\\/screenshots\\/[a-z0-9-]+\\.png/g)].map(x=>x[0]))];if(m.length<7){console.error(\"screenshots linked:\",m.length);process.exit(1)}for(const f of m)fs.statSync(f)'",
+      "acceptance": [],
+      "manual_check": false,
+      "status": "failing",
+      "attempts": 0
     }
   ]
 }
