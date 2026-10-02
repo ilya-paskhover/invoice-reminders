@@ -1,4 +1,4 @@
-Next task: T11
+Next task: T12
 
 # Progress: invoice-reminders
 
@@ -351,3 +351,23 @@ CHANGES:
 (That is the staged diff, which I did not change. I changed no tracked files.)
 
 Main thread note: QA left two untracked screenshots (m-inv.png, rules-err.png) in the repo root. Instead of stopping, the main thread viewed them (no defects) and moved them out of the repo; no tracked file was changed.
+
+TASK: T11
+VERDICT: PASS
+COMMANDS:
+smoke (T00) -> exit 0
+T11 -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+- Step 1 PASS. Created QA-K211900 (due 2026-09-27, UTC today 2026-10-02) and opened the pay link from the invoice detail page. The page shows "Demo Studio", heading "Pay invoice QA-K211900", "Checkout Client", "$120.00", "Due 2026-09-27", the text "Mock checkout. No real payment is taken." and the button "Pay $120.00 (mock)". The layout is a white main card (rgb 255,255,255), centred (430px margin each side at 1280px), on a tinted background (rgb 241,245,249).
+- Step 2 PASS. Clicking the button showed "Payment received. Thank you!" under "Demo Studio", in the same white card on the tinted background.
+- Step 3 PASS. I reopened the pay link from the invoices list. It shows "Demo Studio", "Pay invoice QA-K211900", "Checkout Client", "$120.00", "Due 2026-09-27" and "This invoice is already paid." The "Pay $120.00 (mock)" button count is 0.
+- Phone width PASS. At 375x812 the page scrollWidth is 375, so there is no horizontal scroll. The card spans x=16 to 359.
+- Console errors: none (0 errors, 0 warnings, so no favicon 404).
+- I closed the browser. The stack is still running. A desktop screenshot is saved at .poc-artifacts/t11-desktop.png.
+CHANGES:
+ backend/src/app.ts             |  2 +-
+ backend/src/routes/pay.ts      | 47 +++++++++++++++++++++++++-----
+ backend/tests/pay-page.test.ts | 65 ++++++++++++++++++++++++++++++++++++++++++
+ docs/tasks.json                |  2 +-
+ 4 files changed, 107 insertions(+), 9 deletions(-)

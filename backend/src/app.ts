@@ -36,6 +36,6 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   registerRuleRoutes(app, deps.pool);
   registerReminderRoutes(app, deps);
   registerSchedulerRoutes(app, scheduler);
-  registerPayRoutes(app, deps.pool);
+  registerPayRoutes(app, deps.pool, deps.config);
   return app;
 }

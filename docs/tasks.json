@@ -156,7 +156,7 @@
         "Open http://localhost:13000/invoices, click the QA-K Number link in the first row, and click 'Open customer pay link' again. The page shows 'This invoice is already paid.' and no 'Pay $120.00 (mock)' button."
       ],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {
