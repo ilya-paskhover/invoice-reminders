@@ -1,4 +1,4 @@
-Next task: T12
+Next task: T13
 
 # Progress: invoice-reminders
 
@@ -371,3 +371,12 @@ CHANGES:
  backend/tests/pay-page.test.ts | 65 ++++++++++++++++++++++++++++++++++++++++++
  docs/tasks.json                |  2 +-
  4 files changed, 107 insertions(+), 9 deletions(-)
+
+TASK: T12
+VERDICT: PASS
+COMMANDS:
+(smoke, T00) -> exit 0
+(T12) -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a (safety check: 13 invoices, 8 with QA- numbers, no Harbor & Pine Interiors client in normal mode; checked again after command 2 had finished, same result. Stack left running in normal mode.)
+CHANGES: none (I changed no files; I only ran `git diff --cached --stat`, which showed the already-staged work, 17 files changed, 403 insertions, 30 deletions.)

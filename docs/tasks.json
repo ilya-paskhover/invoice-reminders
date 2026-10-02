@@ -166,7 +166,7 @@
       "verify": "grep -qF 'DEMO_MODE' .env.example && grep -qF 'DB_CREATE_IF_MISSING' .env.example && docker compose up -d --force-recreate --wait db && (cd backend && npm run typecheck && npm test -- tests/demo.test.ts tests/import.test.ts) && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && curl -fsS -X POST http://localhost:14000/api/demo/reset | grep -qF '\"invoices\":9' && curl -fsS http://localhost:14000/api/stats | grep -qF '\"reminders_sent\":7' && curl -fsS http://localhost:14000/api/stats | grep -qF '\"paid_after_reminder_count\":2' && curl -fsS http://localhost:14000/api/invoices | grep -qF 'Harbor & Pine Interiors' && docker compose up -d --build --force-recreate --wait && curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:14000/api/demo/reset | grep -qx 404",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

@@ -11,6 +11,7 @@ import { registerReminderRoutes } from "./routes/reminders";
 import { registerSchedulerRoutes } from "./routes/scheduler";
 import formbody from "@fastify/formbody";
 import { registerPayRoutes } from "./routes/pay";
+import { registerDemoRoutes } from "./routes/demo";
 import { Scheduler } from "./reminders/scheduler";
 import { MockStripeSource } from "./sources/mock-stripe";
 
@@ -37,5 +38,6 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   registerReminderRoutes(app, deps);
   registerSchedulerRoutes(app, scheduler);
   registerPayRoutes(app, deps.pool, deps.config);
+  registerDemoRoutes(app, deps.pool, deps.config);
   return app;
 }

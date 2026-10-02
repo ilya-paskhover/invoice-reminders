@@ -1,0 +1,11 @@
+# Local demo override: uses a separate database so the normal local DB is never reset.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait
+services:
+  api:
+    environment:
+      DEMO_MODE: "true"
+      DATABASE_URL: postgres://postgres:postgres@db:5432/invoice_reminders_demo
+      DB_CREATE_IF_MISSING: "true"
+  web:
+    environment:
+      DEMO_MODE: "true"

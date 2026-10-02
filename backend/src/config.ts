@@ -11,6 +11,13 @@ export interface Config {
   publicApiUrl: string;
   webOrigin: string;
   schedulerIntervalSeconds: number;
+  demoMode: boolean;
+  demoResetCheckSeconds: number;
+  dbCreateIfMissing: boolean;
+}
+
+function flag(v: string | undefined): boolean {
+  return v === "true" || v === "1";
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -28,5 +35,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     publicApiUrl: env.PUBLIC_API_URL ?? "http://localhost:14000",
     webOrigin: env.WEB_ORIGIN ?? "http://localhost:13000",
     schedulerIntervalSeconds: Number(env.SCHEDULER_INTERVAL_SECONDS ?? 3600),
+    demoMode: flag(env.DEMO_MODE),
+    demoResetCheckSeconds: Number(env.DEMO_RESET_CHECK_SECONDS ?? 900),
+    dbCreateIfMissing: flag(env.DB_CREATE_IF_MISSING),
   };
 }

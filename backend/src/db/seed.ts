@@ -1,6 +1,6 @@
-import type pg from "pg";
+import type { Queryable } from "../sources/import";
 
-export async function seedDefaultRules(pool: pg.Pool): Promise<void> {
+export async function seedDefaultRules(pool: Queryable): Promise<void> {
   const { rows } = await pool.query("SELECT count(*)::int AS n FROM reminder_rules");
   if (rows[0].n > 0) return;
   const rules = [
