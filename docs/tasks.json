@@ -211,7 +211,7 @@
       "verify": "grep -qF '\"playwright\"' web/package.json && cd web && npm run typecheck && cd .. && docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait && (cd web && npm run screenshots -- --out ../.poc-artifacts/screenshots) && node -e 'const fs=require(\"fs\");for(const d of [\".poc-artifacts/screenshots\",\"docs/screenshots\"])for(const n of [\"dashboard\",\"invoices\",\"invoice-detail\",\"rules\",\"outbox\",\"pay-page\",\"dashboard-mobile\"]){const s=fs.statSync(d+\"/\"+n+\".png\").size;if(s<15000){console.error(d,n,s);process.exit(1)}}' && docker compose up -d --build --force-recreate --wait",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

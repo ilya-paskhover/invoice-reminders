@@ -1,4 +1,4 @@
-Next task: T16
+Next task: T17
 
 # Progress: invoice-reminders
 
@@ -455,3 +455,23 @@ CHANGES:
  web/Dockerfile                      |  7 ++--
  14 files changed, 280 insertions(+), 17 deletions(-)
 (These are the pre-existing staged changes. I made no changes to the repo.)
+
+TASK: T16
+VERDICT: PASS
+COMMANDS:
+(smoke, T00) -> exit 0
+(T16) -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a (extra checks:
+a. Images viewed. All five are fully loaded, with no skeletons or spinners, and all show real demo data. None has a clear defect.
+  - invoice-detail: INV-2041, Harbor & Pine Interiors, $3,200.00, Overdue, 45 days overdue. Three history entries (Final notice, Firm reminder, Friendly nudge).
+  - rules: three rules (Friendly nudge, Firm reminder, Final notice), all Active. The lower half of the page is empty, which is just a short table.
+  - outbox: real reminder emails for INV-2043 and INV-2042 with bodies and pay links. The second card is cut off at the bottom edge of the viewport, so the capture is not full-page.
+  - pay-page: STR-1003, Northwind Coaching, $2,400.00, due 2026-08-28, mock Pay button. Centered with no defect.
+  - dashboard-mobile: Outstanding $10,330.00, Overdue 4, Reminders sent 7. The layout is stacked with no overlap. The third card is cut off at the bottom edge of the viewport.
+  Cosmetic notes, not counted as failures:
+  - Every reminder shows both a "scheduled" badge and a "sent" badge.
+  - The rules table says "1 days".
+b. git status --porcelain docs/screenshots/ shows only the staged "A " entries for the 7 pngs, with no worktree modifications. The verify did not change docs/screenshots/.
+c. curl http://localhost:14000/api/meta returned {"demo_mode":false,"email_delivery":"smtp","last_reset_at":null,"next_reset_at":null}. The stack ended in normal mode.)
+CHANGES: none (I ran git diff --cached --stat only if required; I changed no files.)
