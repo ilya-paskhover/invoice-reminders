@@ -1,0 +1,61 @@
+# Render Blueprint for Invoice Reminders (demo deployment).
+# Field names follow the Render Blueprint spec as known when written; verify against
+# https://render.com/docs/blueprint-spec before the first deploy. See docs/deployment.md.
+databases:
+  - name: invoice-reminders-db
+    databaseName: invoice_reminders
+    user: invoice_reminders
+    plan: free
+    postgresMajorVersion: "16"
+    ipAllowList: [] # no external connections
+
+services:
+  - type: web
+    name: invoice-reminders-api
+    runtime: docker
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /api/health
+    # The scheduler and the daily demo reset run in-process: exactly one instance, no scaling block.
+    numInstances: 1
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: invoice-reminders-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "true"
+      - key: DEMO_MODE
+        value: "true"
+      - key: EMAIL_PROVIDER
+        value: memory
+      # Behind Render's proxy: lets the per-IP write rate limit see real client IPs.
+      - key: TRUST_PROXY
+        value: "true"
+      - key: TZ
+        value: UTC
+      - key: SCHEDULER_INTERVAL_SECONDS
+        value: "3600"
+      - key: BUSINESS_NAME
+        value: Demo Studio
+      - key: FROM_EMAIL
+        value: Demo Studio <billing@demo-studio.test>
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+
+  - type: web
+    name: invoice-reminders-web
+    runtime: docker
+    plan: free
+    dockerContext: ./web
+    dockerfilePath: ./web/Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: DEMO_MODE
+        value: "true"
+      # Build-time: inlined into client JavaScript. Changing it needs a rebuild of this service.
+      - key: NEXT_PUBLIC_API_URL
+        sync: false

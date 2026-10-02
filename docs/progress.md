@@ -1,4 +1,4 @@
-Next task: T15
+Next task: T16
 
 # Progress: invoice-reminders
 
@@ -422,3 +422,36 @@ CHANGES:
  web/src/components/demo-banner.tsx | 47 ++++++++++++++++++++
  web/src/components/nav.tsx         |  1 +
  5 files changed, 143 insertions(+), 1 deletion(-)
+
+TASK: T15
+VERDICT: PASS
+COMMANDS:
+smoke (T00) -> exit 0
+T15 -> exit 0
+FAILURE OUTPUT: none
+BROWSER: n/a (extra checks:
+a. Graceful shutdown: `docker compose stop -t 15 api` left status "Exited (0) Less than a second ago". Logs: "API listening on 4000", "SIGTERM received, shutting down". The handler ran and the exit code was 0. After `docker compose up -d --wait`, all services were healthy and /api/health returned {"status":"ok","db":"ok"}.
+b. render.yaml and docs/deployment.md:
+ - API has numInstances: 1 and no scaling block, so no autoscaling. deployment.md says the same. Yes.
+ - DEMO_MODE is "true" on both api and web. Yes.
+ - TRUST_PROXY is "true" for the API. Yes.
+ - PUBLIC_API_URL, WEB_ORIGIN and NEXT_PUBLIC_API_URL are all `sync: false`, so they are prompted and not hard-coded. Yes.
+ - No real secrets. DATABASE_URL comes from fromDatabase, and the other values are non-sensitive. Yes.
+ - deployment.md gives step-by-step instructions, but only partly. The intro covers the deploy path: New > Blueprint, pick the repo, fill the three URLs. There are also env var tables, a build-time vs runtime section, and a 3-step redeploy checklist. It has no single numbered first-deploy walkthrough. It marks several Render facts as unverified. A newcomer could follow it, but it is somewhat terse.)
+CHANGES:
+ .env.example                        |  2 +
+ backend/.dockerignore               |  3 ++
+ backend/Dockerfile                  |  8 ++--
+ backend/package-lock.json           | 19 ++++++++-
+ backend/package.json                |  3 +-
+ backend/src/config.ts               |  4 +-
+ backend/src/db/ensure-database.ts   |  7 +++-
+ backend/src/db/pool.ts              |  4 +-
+ backend/src/server.ts               | 27 +++++++++++--
+ backend/tests/deploy-config.test.ts | 71 +++++++++++++++++++++++++++++++++
+ docs/deployment.md                  | 79 +++++++++++++++++++++++++++++++++++++
+ docs/tasks.json                     |  2 +-
+ render.yaml                         | 61 ++++++++++++++++++++++++++++
+ web/Dockerfile                      |  7 ++--
+ 14 files changed, 280 insertions(+), 17 deletions(-)
+(These are the pre-existing staged changes. I made no changes to the repo.)

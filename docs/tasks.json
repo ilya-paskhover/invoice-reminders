@@ -201,7 +201,7 @@
       "verify": "docker compose up -d --force-recreate --wait db && (cd backend && npm run typecheck && npm test -- tests/deploy-config.test.ts) && docker build -q -t invoice-reminders-api:prod backend > /dev/null && docker build -q --build-arg NEXT_PUBLIC_API_URL=https://api.invoice-reminders.example.test -t invoice-reminders-web:prod web > /dev/null && test \"$(docker run --rm invoice-reminders-api:prod id -u)\" != \"0\" && test \"$(docker run --rm invoice-reminders-web:prod id -u)\" != \"0\" && docker run --rm invoice-reminders-api:prod sh -c 'test ! -e node_modules/vitest && test -d migrations' && docker run --rm invoice-reminders-web:prod sh -c 'grep -rqF https://api.invoice-reminders.example.test .next/static' && docker compose up -d --build --force-recreate --wait && curl -fsS http://localhost:14000/api/health | grep -qF '\"db\":\"ok\"' && curl -fsS http://localhost:13000/ | grep -qF 'Invoice Reminders'",
       "acceptance": [],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

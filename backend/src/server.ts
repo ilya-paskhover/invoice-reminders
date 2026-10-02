@@ -11,8 +11,8 @@ import { Scheduler } from "./reminders/scheduler";
 
 async function main() {
   const config = loadConfig();
-  if (config.dbCreateIfMissing) await ensureDatabase(config.databaseUrl);
-  const pool = createPool(config.databaseUrl);
+  if (config.dbCreateIfMissing) await ensureDatabase(config.databaseUrl, config.databaseSsl);
+  const pool = createPool(config.databaseUrl, config.databaseSsl);
   await runMigrations(pool);
   await seedDefaultRules(pool);
   if (config.demoMode) await checkAndResetIfStale(pool, config);
@@ -21,7 +21,28 @@ async function main() {
   const app = await buildApp({ pool, emailSender, config, scheduler });
   await app.listen({ host: "0.0.0.0", port: config.port });
   scheduler.start();
-  if (config.demoMode) new DemoResetter(pool, config).start();
+  const resetter = config.demoMode ? new DemoResetter(pool, config) : null;
+  resetter?.start();
+  let shuttingDown = false;
+  const shutdown = async (signal: string) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`${signal} received, shutting down`);
+    const force = setTimeout(() => process.exit(1), 10000);
+    force.unref();
+    try {
+      scheduler.stop();
+      resetter?.stop();
+      await app.close();
+      await pool.end();
+      process.exit(0);
+    } catch (err) {
+      console.error("shutdown failed", err);
+      process.exit(1);
+    }
+  };
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
   console.log(`API listening on ${config.port}`);
 }
 

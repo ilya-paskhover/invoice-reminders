@@ -18,6 +18,7 @@ export interface Config {
   demoMaxInvoices: number;
   demoMaxRules: number;
   trustProxy: boolean;
+  databaseSsl: boolean;
 }
 
 function flag(v: string | undefined): boolean {
@@ -36,7 +37,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     smtpPass: env.SMTP_PASS || undefined,
     fromEmail: env.FROM_EMAIL ?? "Demo Studio <billing@demo-studio.test>",
     businessName: env.BUSINESS_NAME ?? "Demo Studio",
-    publicApiUrl: env.PUBLIC_API_URL ?? "http://localhost:14000",
+    publicApiUrl: env.PUBLIC_API_URL ?? env.RENDER_EXTERNAL_URL ?? "http://localhost:14000",
     webOrigin: env.WEB_ORIGIN ?? "http://localhost:13000",
     schedulerIntervalSeconds: Number(env.SCHEDULER_INTERVAL_SECONDS ?? 3600),
     demoMode: flag(env.DEMO_MODE),
@@ -46,5 +47,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     demoMaxInvoices: Number(env.DEMO_MAX_INVOICES ?? 200),
     demoMaxRules: Number(env.DEMO_MAX_RULES ?? 20),
     trustProxy: flag(env.TRUST_PROXY),
+    databaseSsl: flag(env.DATABASE_SSL),
   };
 }
