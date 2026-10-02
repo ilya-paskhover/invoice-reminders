@@ -126,7 +126,7 @@
         "Click the QA-S number link in that 'Recent activity' entry. The invoice detail page opens with the link 'Back to invoices', the heading 'Invoice QA-S...' (the number created above), and under 'Reminder history' an entry showing 'Firm reminder' and 'scheduled'."
       ],
       "manual_check": false,
-      "status": "failing",
+      "status": "passing",
       "attempts": 0
     },
     {

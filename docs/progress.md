@@ -1,4 +1,4 @@
-Next task: T09
+Next task: T10
 
 # Progress: invoice-reminders
 
@@ -261,3 +261,38 @@ Tasks needing a manual hands-on check (`manual_check`): none.
 ## Phase 2 plan (2026-10-02)
 
 Planned by architect-planner. T09 to T17 were added to `docs/tasks.json` (all `failing`, attempts 0). T00 to T08 are unchanged. The spec is `docs/poc-spec.md` section 11. Order: UI polish (T09 to T11), demo mode (T12 to T14), Render deployment config (T15), screenshots (T16), README (T17). Demo start: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build --force-recreate --wait`; `Start:` returns to normal mode.
+
+TASK: T09
+VERDICT: PASS
+COMMANDS:
+- (smoke, T00) docker compose up -d --build --force-recreate --wait && curl health/web/mailpit && (cd backend && npm run typecheck && npm test) && (cd web && npm run typecheck) -> exit 0
+- (T09) cd web && npm run typecheck && npm run build && cd .. && ls ui files && docker compose up -d --build --force-recreate --wait && curl home page + grep literals (incl. aria-current="page", rel="icon") -> exit 0
+FAILURE OUTPUT: none
+BROWSER:
+- Step 1 PASS. Header 'Invoice Reminders' with nav links Dashboard, Invoices and Rules. Heading 'Dashboard' and button 'Run reminders now' were visible. Four stat cards had exact-case labels: Outstanding ($5,280.00), Overdue invoices (4, $4,380.00), Reminders sent (13) and Recovered after reminder (2, $1,300.00). None showed '-'. The line 'Scheduler: every 60 min, next run 11:29:23 PM' and the heading 'Recent activity' were visible.
+- Step 2 PASS. I clicked Invoices, then New invoice, and created QA-S222946 (Stats Client, stats@client.test, 300.00, due 2026-09-20, which is 12 days before today). It appeared in the list as Overdue, 12 days. On the Dashboard 'Reminders sent' was 13. After 'Run reminders now', the message 'Run complete: checked 5, sent 1, failed 0' appeared and 'Reminders sent' became 14. Recent activity had a row with QA-S222946, Stats Client, Firm reminder, scheduled and sent.
+- Step 3 PASS. Clicking the QA-S222946 link opened /invoices/17. It showed the link 'Back to invoices', the heading 'Invoice QA-S222946', and under 'Reminder history' an entry with 'Firm reminder', 'Trigger: scheduled' and 'Status: sent'.
+- Visual notes from the Dashboard screenshot: clean layout with a white header (logo icon, brand, nav pills). Dashboard is the active pill, highlighted in indigo. The page header has a subtitle, and the indigo 'Run reminders now' button with an icon sits at the right. Four stat cards in one row have icons, large numbers and sub-amounts. A grey info bar holds the Scheduler line. The Recent activity table sits in a rounded card with coloured badges (scheduled in blue, manual in amber, sent in green). I saw no overlap, no broken styling and no truncation.
+- Console errors: none (0 errors, 0 warnings).
+- The browser is closed. The docker stack was left running, as instructed.
+CHANGES:
+ docs/tasks.json                       |   2 +-
+ web/package-lock.json                 |  30 +++++-
+ web/package.json                      |   2 +
+ web/src/app/globals.css               |   8 ++
+ web/src/app/icon.svg                  |   2 +-
+ web/src/app/layout.tsx                |  25 +++--
+ web/src/app/page.tsx                  | 169 ++++++++++++++++++++--------------
+ web/src/components/nav.tsx            |  40 ++++++++
+ web/src/components/ui/alert.tsx       |  16 ++++
+ web/src/components/ui/badge.tsx       |  32 +++++++
+ web/src/components/ui/button.tsx      |  31 +++++++
+ web/src/components/ui/card.tsx        |   6 ++
+ web/src/components/ui/empty-state.tsx |  10 ++
+ web/src/components/ui/field.tsx       |  23 +++++
+ web/src/components/ui/page-header.tsx |  13 +++
+ web/src/components/ui/skeleton.tsx    |   5 +
+ web/src/components/ui/stat-card.tsx   |  37 ++++++++
+ web/src/components/ui/table.tsx       |  29 ++++++
+ web/src/lib/cn.ts                     |   3 +
+ 19 files changed, 401 insertions(+), 82 deletions(-)
