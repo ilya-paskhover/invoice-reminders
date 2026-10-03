@@ -2,10 +2,10 @@
 
 A small web app that chases late invoices for you. Import overdue invoices, define escalating reminder rules (1, 10 and 30 days after the due date by default: Friendly nudge, Firm reminder, Final notice), and the app sends the right email at the right time, tracks every reminder, and gives the customer a pay link that marks the invoice paid. It is a portfolio proof of concept: Next.js frontend, Fastify and Postgres backend, fully containerised, with a public demo mode that resets itself daily.
 
-Live demo: TODO (add Render URL)
-Demo video: TODO (add link)
+Live demo: https://invoice-reminders-web.onrender.com (free hosting, so the first visit can take about a minute to wake up; data resets daily and no real emails are sent)
+Demo video: [docs/demo/demo.webm](docs/demo/demo.webm) (1 minute walkthrough)
 
-![Dashboard](docs/screenshots/dashboard.png)
+![Demo: import, create an overdue invoice, send a reminder, pay from the email link, see it recovered](docs/demo/demo.gif)
 
 ## The problem
 
@@ -132,6 +132,13 @@ npm run screenshots:install-browser   # one-time browser download
 npm run screenshots
 ```
 
+The demo video and GIF in `docs/demo/` come from a second script, also run against the demo stack:
+
+```bash
+cd web
+npm run demo-video
+```
+
 ## Demo mode
 
 `DEMO_MODE=true` makes the app safe to expose publicly:
@@ -167,7 +174,7 @@ The repo includes a Render Blueprint (`render.yaml`) that creates a Postgres dat
 
 Details, all environment variables and caveats are in [docs/deployment.md](docs/deployment.md).
 
-Note: Render free-tier limits (sleep after inactivity, database expiry, Blueprint field names) are unverified in this repo. The config has only been validated locally. Check Render's current docs and pricing before deploying.
+Note: this Blueprint is what runs the live demo above. Render free-tier limits (sleep after inactivity, database expiry) change over time, so check Render's current docs and pricing before deploying your own copy.
 
 ## Limitations
 
@@ -175,7 +182,7 @@ Note: Render free-tier limits (sleep after inactivity, database expiry, Blueprin
 - The Stripe import and the pay page are mocks; no real payments or real Stripe API calls.
 - Single API instance only, because the scheduler, the demo resetter and the rate limiter are in-process.
 - Emails are plain text.
-- Not deployed from this repository yet; the Render setup is validated locally only.
+- The live demo runs on Render's free tier, so it sleeps when idle and wakes slowly on the first visit.
 
 ## Next steps
 
