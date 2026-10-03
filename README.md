@@ -3,9 +3,9 @@
 A small web app that chases late invoices for you. Import overdue invoices, define escalating reminder rules (1, 10 and 30 days after the due date by default: Friendly nudge, Firm reminder, Final notice), and the app sends the right email at the right time, tracks every reminder, and gives the customer a pay link that marks the invoice paid. It is a portfolio proof of concept: Next.js frontend, Fastify and Postgres backend, fully containerised, with a public demo mode that resets itself daily.
 
 Live demo: https://invoice-reminders-web.onrender.com (free hosting, so the first visit can take about a minute to wake up; data resets daily and no real emails are sent)
-Demo video: [docs/demo/demo.webm](docs/demo/demo.webm) (1 minute walkthrough)
+Demo video: a 1:36 walkthrough with captions (plays below)
 
-![Demo: import, create an overdue invoice, send a reminder, pay from the email link, see it recovered](docs/demo/demo.gif)
+https://github.com/user-attachments/assets/6a1437bd-7ab1-4f56-a48e-c567c1c3a423
 
 ## The problem
 
@@ -32,6 +32,10 @@ Automated, rule-based reminders remove most of that manual chasing.
 - Demo mode for safe public hosting (see [Demo mode](#demo-mode)).
 
 ## Screenshots
+
+Quick look (animated):
+
+![Demo: import, create an overdue invoice, send a reminder, pay from the email link, see it recovered](docs/demo/demo.gif)
 
 | | |
 |---|---|
