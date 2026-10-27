@@ -1,13 +1,8 @@
 # Render Blueprint for Invoice Reminders (demo deployment).
 # Field names follow the Render Blueprint spec as known when written; verify against
 # https://render.com/docs/blueprint-spec before the first deploy. See docs/deployment.md.
-databases:
-  - name: invoice-reminders-db
-    databaseName: invoice_reminders
-    user: invoice_reminders
-    plan: free
-    postgresMajorVersion: "16"
-    ipAllowList: [] # no external connections
+# No managed database: Render's free Postgres expires after 30 days. The API image runs
+# its own throwaway Postgres instead (backend/Dockerfile.render); demo mode re-seeds it.
 
 services:
   - type: web
@@ -15,16 +10,17 @@ services:
     runtime: docker
     plan: free
     dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./backend/Dockerfile.render
     healthCheckPath: /api/health
     # The scheduler and the daily demo reset run in-process: exactly one instance, no scaling block.
     numInstances: 1
     envVars:
+      # Postgres inside the same container, reachable only on 127.0.0.1.
       - key: DATABASE_URL
-        fromDatabase:
-          name: invoice-reminders-db
-          property: connectionString
+        value: postgres://postgres@127.0.0.1:5432/invoice_reminders
       - key: DATABASE_SSL
+        value: "false"
+      - key: DB_CREATE_IF_MISSING
         value: "true"
       - key: DEMO_MODE
         value: "true"

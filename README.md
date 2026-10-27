@@ -162,7 +162,7 @@ Then open http://localhost:13000. Go back to the normal setup by running `docker
 
 ## Deploy to Render
 
-The repo includes a Render Blueprint (`render.yaml`) that creates a Postgres database, the API and the web app, all in demo mode. First deploy:
+The repo includes a Render Blueprint (`render.yaml`) that creates the API and the web app, both in demo mode. It needs no managed database: Render's free Postgres expires after 30 days, so the API's Render image (`backend/Dockerfile.render`) runs its own throwaway Postgres, which demo mode re-seeds on every start. First deploy:
 
 1. Push this repository to your own GitHub account.
 2. Create a Render account and connect it to GitHub.
@@ -178,7 +178,7 @@ The repo includes a Render Blueprint (`render.yaml`) that creates a Postgres dat
 
 Details, all environment variables and caveats are in [docs/deployment.md](docs/deployment.md).
 
-Note: this Blueprint is what runs the live demo above. Render free-tier limits (sleep after inactivity, database expiry) change over time, so check Render's current docs and pricing before deploying your own copy.
+Note: this Blueprint is what runs the live demo above. Render free-tier limits (such as sleep after inactivity) change over time, so check Render's current docs and pricing before deploying your own copy.
 
 ## Limitations
 

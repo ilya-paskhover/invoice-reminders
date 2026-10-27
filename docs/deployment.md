@@ -1,6 +1,6 @@
 # Deployment (Render)
 
-Platform: Render, deployed from the Blueprint `render.yaml` at the repo root (New > Blueprint, pick the repo, fill the three prompted URLs). Nothing here has been deployed from this repository; the config is validated locally only (`backend/tests/deploy-config.test.ts` plus building both production images).
+Platform: Render, deployed from the Blueprint `render.yaml` at the repo root (New > Blueprint, pick the repo, fill the three prompted URLs). This Blueprint runs the live demo; `backend/tests/deploy-config.test.ts` checks the file.
 
 Items marked **(unverified)** come from memory of Render's docs and pricing, not from checking them. Check https://render.com/docs/blueprint-spec and the pricing page before the first deploy.
 
@@ -8,16 +8,16 @@ Items marked **(unverified)** come from memory of Render's docs and pricing, not
 
 | Service | Type | Notes |
 |---|---|---|
-| `invoice-reminders-db` | managed Postgres 16 | `ipAllowList: []` means no external connections (unverified field semantics) |
-| `invoice-reminders-api` | Docker web service | health check `/api/health`, single instance |
+| `invoice-reminders-api` | Docker web service (`backend/Dockerfile.render`) | health check `/api/health`, single instance, runs its own Postgres (see below) |
 | `invoice-reminders-web` | Docker web service | health check `/` |
 
 ## Environment variables: API (`invoice-reminders-api`)
 
 | Variable | Set in render.yaml | Meaning |
 |---|---|---|
-| `DATABASE_URL` | from the database (`fromDatabase`, `connectionString`) | Postgres connection string |
-| `DATABASE_SSL` | `true` | Passes `ssl: { rejectUnauthorized: false }` to `pg`. Local compose leaves it unset (`false`), so local Postgres works without TLS |
+| `DATABASE_URL` | `postgres://postgres@127.0.0.1:5432/invoice_reminders` | The Postgres inside the API container |
+| `DATABASE_SSL` | `false` | Set `true` for an external managed database: passes `ssl: { rejectUnauthorized: false }` to `pg` |
+| `DB_CREATE_IF_MISSING` | `true` | Creates the database on the fresh embedded Postgres at each startup |
 | `DEMO_MODE` | `true` | Demo mode: email suppressed, daily data reset, write rate limit, caps |
 | `EMAIL_PROVIDER` | `memory` | No SMTP on Render (demo mode suppresses email anyway) |
 | `TRUST_PROXY` | `true` | See "Rate limit and TRUST_PROXY" |
@@ -29,7 +29,7 @@ Items marked **(unverified)** come from memory of Render's docs and pricing, not
 | `WEB_ORIGIN` | prompted (`sync: false`) | Web app origin for CORS. Must equal the real web URL exactly (scheme and host, no trailing slash) |
 | `PORT` | injected by Render | The API listens on `$PORT` (default 4000) |
 
-Other API variables (defaults are fine on Render): `DEMO_RESET_CHECK_SECONDS` (900), `DEMO_WRITE_RATE_LIMIT` (30 writes per minute per IP), `DEMO_MAX_INVOICES` (200), `DEMO_MAX_RULES` (20), `DB_CREATE_IF_MISSING` (false), `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` (SMTP only).
+Other API variables (defaults are fine on Render): `DEMO_RESET_CHECK_SECONDS` (900), `DEMO_WRITE_RATE_LIMIT` (30 writes per minute per IP), `DEMO_MAX_INVOICES` (200), `DEMO_MAX_RULES` (20), `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` (SMTP only).
 
 ## Environment variables: web (`invoice-reminders-web`)
 
@@ -64,12 +64,13 @@ On SIGTERM or SIGINT the API stops the scheduler and the demo resetter, closes F
 ## Production images
 
 - API: `node:22-alpine`, `npm ci --omit=dev` (`tsx` is a runtime dependency; `vitest` and `typescript` are dev-only), runs as the `node` user. Contains `src/` and `migrations/` only.
+- API on Render: `backend/Dockerfile.render` is the same image plus Alpine's `postgresql16`. `render-start.sh` starts a throwaway Postgres (127.0.0.1 only, trust auth, data in `/tmp`), then the API, and stops both on SIGTERM. Every restart or wake-up starts with an empty database, and demo mode re-seeds it. About 105 MiB RAM in a local test, within the free tier's 512 MB. For a real deployment with data to keep, use `backend/Dockerfile` and an external database (`DATABASE_SSL=true`).
 - Web: Next.js standalone output, runs as the `node` user.
 
 ## Free-tier caveats (unverified)
 
 - Free web services spin down after about 15 minutes without traffic and take up to about a minute to wake. While the API sleeps, the scheduler and the resetter do not run. On wake-up, startup runs the stale-demo check, so the data is fresh on the first request of a new day.
-- Free Postgres databases expire after about 30 days unless upgraded.
+- Free Render Postgres databases expire after 30 days (confirmed by Render's expiry email), which is why the Blueprint has no managed database.
 - The Render free tier may change; check the pricing page.
 
 ## Redeploy checklist

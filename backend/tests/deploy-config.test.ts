@@ -30,12 +30,12 @@ describe("render.yaml", () => {
     expect(api.scaling).toBeUndefined();
   });
 
-  it("wires DATABASE_URL from the managed database", () => {
-    expect(env(api, "DATABASE_URL").fromDatabase).toEqual({
-      name: render.databases[0].name,
-      property: "connectionString",
-    });
-    expect(env(api, "DATABASE_SSL").value).toBe("true");
+  it("uses the API image's embedded Postgres instead of an expiring managed database", () => {
+    expect(render.databases).toBeUndefined();
+    expect(api.dockerfilePath).toBe("./backend/Dockerfile.render");
+    expect(env(api, "DATABASE_URL").value).toMatch(/^postgres:\/\/postgres@127\.0\.0\.1:5432\//);
+    expect(env(api, "DATABASE_SSL").value).toBe("false");
+    expect(env(api, "DB_CREATE_IF_MISSING").value).toBe("true");
   });
 
   it("enables demo mode and safe settings", () => {

@@ -1,0 +1,16 @@
+# Render demo image: Postgres runs inside the API container, so the free tier needs no
+# managed database (Render's free one expires after 30 days). Data is wiped on every
+# restart, which is fine because demo mode re-seeds at startup. Local compose and real
+# deployments keep using ./Dockerfile with an external database.
+FROM node:22-alpine
+RUN apk add --no-cache postgresql16
+WORKDIR /app
+ENV NODE_ENV=production PGDATA=/tmp/pgdata
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --chown=node:node src ./src
+COPY --chown=node:node migrations ./migrations
+COPY --chown=node:node render-start.sh ./
+USER node
+EXPOSE 4000
+CMD ["sh", "render-start.sh"]
